@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 
+from app.modules.actions import service as actions
 from app.modules.contacts import service as contacts
 from app.modules.followup import maintenance
 from app.modules.memory import service as memory
@@ -12,6 +13,8 @@ Handler = Callable[[dict], dict | None]
 HANDLERS: dict[str, Handler] = {
     "embed_memory": memory.index_memory,
     "send_contact_consent": contacts.deliver_consent,
+    "send_invitation": actions.deliver_invitation,
+    "send_reminder": actions.deliver_reminder,
     "send_support_request": support_requests.deliver_request,
     "maintenance": maintenance.run,
 }
