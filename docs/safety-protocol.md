@@ -1,6 +1,6 @@
 # Protocolo de seguridad conversacional
 
-Versión de política: `2026-10-01.v1` · Archivo: `config/safety_policy.v1.yaml`
+Versión de política: `2026-10-01.v2` · Archivo: `config/safety_policy.v1.yaml`
 
 > **Estado: borrador de ingeniería, sin revisión profesional.**
 > Antes de cualquier piloto con personas reales, una persona profesional competente en
@@ -54,7 +54,8 @@ Se evalúa en orden; gana la primera fila que coincide.
 | 6 | Clasificador: `intent = unclear` | `clarify` |
 | 7 | Reglas explícitas o moderación con intención marcada, y el clasificador **no** explica el contexto (no es tercero, cita, pasado, hipótesis ni negación) | `clarify` |
 | 8 | Moderación marca intención de autolesión aunque el clasificador explique el contexto | `clarify` |
-| 9 | Cualquier otro caso | `normal` |
+| 9 | Reglas detectan una expresión ambigua y el clasificador marca negación | `clarify` |
+| 10 | Cualquier otro caso | `normal` |
 
 Las filas 7 y 8 hacen que una discrepancia entre capas se resuelva preguntando, no
 ignorando la señal. Tristeza, duelo, una cita, un relato del pasado o la situación de un
@@ -141,6 +142,8 @@ Un evento de seguridad guarda ruta, instante, capas que aportaron señal y versi
 política y clasificador. No guarda el texto ni puntuaciones. Retención: 30 días.
 
 ## 11. Evaluación
+
+El clasificador usa el prompt versionado `config/prompts/safety_classifier.v2.md`.
 
 `evals/safety_scenarios.yaml` contiene escenarios sintéticos con ruta esperada y la marca
 `professional_review: pending`. En CI se prueban las reglas y el enrutador con señales

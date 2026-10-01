@@ -92,6 +92,8 @@ def test_rules_ignore_accents_and_case() -> None:
         ),
         (RuleSignals(ambiguous=True), CLEAN, classification(), Route.normal),
         (RuleSignals(), CLEAN, classification(), Route.normal),
+        # Una negación junto a una expresión ambigua no despeja la duda.
+        (RuleSignals(ambiguous=True), CLEAN, classification(negated=True), Route.clarify),
         # Un intento de saltarse políticas no baja la ruta.
         (RuleSignals(bypass=True), CLEAN, classification(intent="ideation"), Route.support),
         (

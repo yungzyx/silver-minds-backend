@@ -5,7 +5,7 @@ from pathlib import Path
 
 PROMPTS_DIR = Path(__file__).resolve().parents[3] / "config" / "prompts"
 AGENT_PROMPT_VERSION = "agent.v1"
-CLASSIFIER_PROMPT_VERSION = "safety_classifier.v1"
+CLASSIFIER_PROMPT_VERSION = "safety_classifier.v2"
 
 
 @lru_cache

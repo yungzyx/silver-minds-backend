@@ -3,7 +3,7 @@
 # ESTADO: borrador de ingeniería. Reglas y plantillas NO han sido revisadas por una
 # persona profesional de salud mental. Esa revisión es obligatoria antes de un piloto.
 # La detección no garantiza identificar todos los casos.
-version: "2026-10-01.v1"
+version: "2026-10-01.v2"
 professional_review: pending
 
 # Las expresiones se evalúan sobre texto normalizado: minúsculas y sin acentos (la ñ se conserva).
@@ -39,6 +39,7 @@ rules:
     - '\b(estarian|estaran|van a estar) mejor sin mi\b'
     - '\bpara que seguir\b'
     - '\b(ya )?nada tiene sentido\b'
+    - '\bno (le )?(veo|encuentro) (el |ningun )?sentido\b'
     - '\bno le importo a nadie\b'
     - '\b(quiero|quisiera) dormir y no despertar\b'
     - '\bque todo se acabe\b'

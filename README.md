@@ -135,7 +135,7 @@ Cada integración se activa con variables de entorno; ver [.env.example](.env.ex
 
 | Integración | Variable | Estado |
 |---|---|---|
-| OpenAI (Responses, embeddings, moderación, voz) | `AI_PROVIDER=openai` | Implementada, **sin ejecutar contra la API real** |
+| OpenAI (Responses, embeddings, moderación, voz) | `AI_PROVIDER=openai` | Verificada con llamadas reales el 1 de octubre de 2026 (`check-ai`) |
 | Resend | `EMAIL_PROVIDER=resend` | Implementada, **sin ejecutar contra la API real** |
 | ElevenLabs (voz del dispositivo y transcripción) | `VOICE_PROVIDER=elevenlabs` | Implementada, **sin ejecutar contra la API real** |
 | Supabase Storage | `STORAGE_PROVIDER=supabase` | Implementada, **sin ejecutar contra un proyecto real** |

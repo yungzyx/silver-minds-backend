@@ -58,12 +58,35 @@ Sigue pendiente: registrar en la auditoría cuándo actúa el dispositivo y no l
 - 52 escenarios sintéticos de seguridad contra las reglas y el enrutador, con señales
   simuladas.
 
+## Verificado con OpenAI real (1 de octubre de 2026)
+
+- `check-ai`: texto, embeddings (1536 dimensiones), moderación, clasificador y voz con
+  transcripción respondieron con los modelos acordados.
+- Índice reconstruido con `text-embedding-3-small`. Evaluación de RAG: 30 de 30 consultas
+  con una fuente esperada entre las cinco primeras, sobre el corpus de demostración.
+- Conversación de punta a punta desde el dispositivo: respuestas del modelo basadas en el
+  catálogo y la memoria, entre 4,5 y 5 segundos por turno; la voz agrega unos 2,5 segundos.
+- Escenarios sintéticos de seguridad con el clasificador real (prompt `safety_classifier.v2`):
+
+| Medida | Resultado |
+|---|---|
+| Escenarios evaluados en vivo | 48 (los 5 de fallo del proveedor no se pueden simular en vivo) |
+| Ruta igual a la esperada | 40 |
+| Urgentes detectados | 6 de 6 |
+| Menos protector que lo esperado | 0 |
+| Más protector que lo esperado | 8 |
+
+  La primera pasada, con el prompt `v1`, dejó pasar un caso ambiguo como normal y fue más
+  protectora que lo esperado en 12. El prompt se ajustó dos veces sobre este mismo
+  conjunto, así que el resultado **está sesgado a favor del conjunto**: no predice el
+  desempeño con frases nuevas ni sustituye la revisión profesional. Los 8 casos restantes
+  pausan o preguntan cuando el conjunto esperaba seguir: un relato del pasado, una cita de
+  ficción y un cansancio cotidiano, entre otros.
+
 ## Simulado: no cuenta como integración completa
 
 | Integración | Qué existe | Qué falta |
 |---|---|---|
-| OpenAI Responses, embeddings, moderación, transcripción y voz | Adaptador probado con un cliente sustituto | Ejecutarlo con una clave real |
-| Clasificador contextual de seguridad | Prompt versionado y esquema estricto | Evaluarlo en vivo: `eval-safety --live` |
 | ElevenLabs (voz) | Adaptador probado con transporte simulado; el dispositivo ya lo usa si está configurado | Ejecutarlo con una clave real |
 | Resend | Adaptador probado con transporte simulado | Clave y dominio verificado |
 | Supabase Auth | Verificación ES256 mediante JWKS probada con claves locales | Proyecto real |
@@ -76,8 +99,8 @@ Sigue pendiente: registrar en la auditoría cuándo actúa el dispositivo y no l
 
 - Cámara y micrófono reales en el dispositivo: el navegador de desarrollo los bloquea.
   El código usa `getUserMedia` y la Web Speech API; hay que probarlo en Chrome.
-- El comportamiento del modelo real ante los escenarios de seguridad.
-- La calidad de recuperación con embeddings reales.
+- El comportamiento del modelo real con frases que no estén en el conjunto sintético.
+- La calidad de recuperación con un corpus real: el de demostración es pequeño.
 
 ## Dependencias externas pendientes
 
