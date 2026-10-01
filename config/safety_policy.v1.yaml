@@ -1,0 +1,125 @@
+# Política de seguridad conversacional. Configuración versionada, fuera del RAG.
+#
+# ESTADO: borrador de ingeniería. Reglas y plantillas NO han sido revisadas por una
+# persona profesional de salud mental. Esa revisión es obligatoria antes de un piloto.
+# La detección no garantiza identificar todos los casos.
+version: "2026-10-01.v1"
+professional_review: pending
+
+# Las expresiones se evalúan sobre texto normalizado: minúsculas y sin acentos (la ñ se conserva).
+rules:
+  # Acción en curso o peligro inmediato declarado.
+  urgent:
+    - '\b(ya )?me (tome|trague) (todas )?(las|unas|muchas) pastillas\b'
+    - '\btengo (las pastillas|el arma|la pistola|el cuchillo|la cuerda|el veneno) (en la mano|lista|listo|conmigo|aqui)\b'
+    - '\b(me voy a|voy a) (matarme|matar|suicidarme|suicidar|quitarme la vida)\b.{0,40}\b(ahora|hoy|esta noche|ya|mismo)\b'
+    - '\b(ahora|hoy|esta noche) (mismo )?(me voy a|voy a) (matarme|suicidarme|quitarme la vida)\b'
+    - '\bestoy a punto de (matarme|suicidarme|saltar|quitarme la vida|hacerlo)\b'
+    - '\b(acabo de|me acabo de) (tomarme|cortarme|intentar)\b'
+    - '\bme (corte|estoy cortando) las venas\b'
+
+  # Pensamientos de autolesión dichos de forma directa.
+  explicit:
+    - '\b(quiero|quisiera|pienso en|he pensado en|estoy pensando en|voy a|me voy a|tengo ganas de|deseo) (morir|morirme|matarme|suicidarme|quitarme la vida|acabar con todo|acabar con mi vida|terminar con mi vida)\b'
+    - '\bme quiero (morir|matar|suicidar)\b'
+    - '\bno quiero (seguir )?(viviendo|vivir)\b'
+    - '\b(quiero|voy a|pienso) hacerme daño\b'
+    - '\bme quiero hacer daño\b'
+    - '\bsuicidarme\b'
+    - '\bmejor (estaria|estar) muert[oa]\b'
+
+  # Expresiones que pueden o no referirse a autolesión: necesitan contexto.
+  ambiguous:
+    - '\b(ya )?no doy mas\b'
+    - '\b(ya )?no (puedo|aguanto) mas\b'
+    - '\bno vale la pena (seguir|vivir)\b'
+    - '\b(quiero|quisiera) desaparecer\b'
+    - '\bsoy una carga\b'
+    - '\b(estarian|estaran|van a estar) mejor sin mi\b'
+    - '\bpara que seguir\b'
+    - '\b(ya )?nada tiene sentido\b'
+    - '\bno le importo a nadie\b'
+    - '\b(quiero|quisiera) dormir y no despertar\b'
+    - '\bque todo se acabe\b'
+
+  # Intentos de saltarse las políticas. Nunca bajan la ruta ni reanudan el flujo.
+  bypass:
+    - '\b(ignora|olvida|omite|saltate) (tus|las|todas las|todas tus) (reglas|politicas|instrucciones|restricciones)\b'
+    - '\bmodo (desarrollador|sin restricciones|libre)\b'
+    - '\bsin (filtros|restricciones)\b'
+    - '\bdesactiva (el protocolo|la seguridad|los filtros)\b'
+    - '\b(sigue|continua) como si nada\b'
+    - '\bactua como si no tuvieras (reglas|limites|restricciones)\b'
+
+# Plantillas fijas. {crisis} y {emergency} se reemplazan por los recursos del país.
+templates:
+  clarify:
+    initial: >-
+      Gracias por decírmelo. Antes de seguir quiero entenderte bien, porque me importa
+      cómo estás. Cuando dices eso, ¿estás pensando en hacerte daño o en quitarte la
+      vida? Puedes responderme con confianza; sigo aquí.
+    followup: >-
+      Sigo aquí y quiero entenderte bien. ¿Estás pensando en hacerte daño o en quitarte
+      la vida? Si prefieres hablar ahora con una persona, puedes llamar: {crisis}.
+    resumable: >-
+      Gracias por aclararlo. Dejé en pausa las sugerencias mientras conversábamos de
+      esto. Cuando tú lo decidas, puedes confirmar que quieres retomarlas.
+
+  support:
+    initial: >-
+      Lamento que estés pasando por esto, y gracias por contármelo. No tienes que
+      enfrentarlo a solas. Soy un asistente y no puedo reemplazar a una persona, así que
+      te propongo hablar ahora con alguien que pueda acompañarte: {crisis}. Si quieres,
+      también puedo ayudarte a escribirle a una persona de tu confianza; tú eliges a
+      quién y revisas el mensaje antes de enviarlo. ¿Estás en peligro en este momento?
+    followup: >-
+      Sigo aquí contigo. Hablar con una persona puede ayudar: {crisis}. Si estás en
+      peligro ahora, llama a emergencias: {emergency}. ¿Hay alguien cerca que pueda
+      acompañarte?
+    resumable: >-
+      Gracias por contarme cómo sigues. Las sugerencias siguen en pausa. Si quieres
+      retomarlas, confírmalo cuando tú lo decidas; y si vuelves a sentirte mal, aquí
+      sigue la ayuda: {crisis}.
+
+  urgent:
+    initial: >-
+      Lo que me cuentas es urgente y tu seguridad es lo primero. Llama ahora a
+      emergencias: {emergency}. Si hay alguien cerca, pídele que se quede contigo y que
+      llame por ti. Si puedes, aléjate de aquello con lo que podrías hacerte daño. Yo no
+      puedo llamar ni enviar ayuda, pero sigo aquí mientras llamas. También atienden a
+      cualquier hora en: {crisis}.
+    followup: >-
+      Sigo aquí. Tu seguridad es lo primero: llama ahora a emergencias, {emergency}, o
+      pide a alguien cercano que te acompañe. También puedes llamar a: {crisis}.
+    resumable: >-
+      Gracias por responderme. Las sugerencias siguen en pausa. Si necesitas ayuda otra
+      vez: {emergency} · {crisis}. Cuando tú lo decidas, puedes confirmar que quieres
+      retomar la conversación habitual.
+
+  unavailable:
+    initial: >-
+      En este momento no puedo revisar bien tu mensaje, así que prefiero no darte
+      sugerencias. Si estás pasando por un momento difícil o estás en peligro, hay
+      personas que atienden ahora: {emergency} · {crisis}. Puedes volver a escribirme
+      en unos minutos.
+
+# Se usa cuando el país del perfil no tiene recursos configurados.
+no_resources_text: el número de emergencias de tu país
+
+# Texto mostrado junto a la opción de escribir a un contacto.
+contact_note: >-
+  Tú eliges a quién escribir y revisas el mensaje antes de enviarlo. El correo puede
+  tardar en leerse: no reemplaza una llamada si necesitas ayuda ahora.
+
+# Reemplaza una respuesta generada que no pasó la validación de salida.
+output_fallback: >-
+  Prefiero no responder eso de esta forma. ¿Me cuentas un poco más sobre lo que te
+  gustaría conversar o hacer?
+generation_fallback: >-
+  Tuve un problema para responderte ahora. ¿Puedes escribirme de nuevo en un momento?
+
+# Una respuesta generada no puede presentarse como algo que no es.
+output_forbidden:
+  - '\bsoy (tu )?(terapeuta|psicolog[oa]|psiquiatra|medic[oa]|doctor[a]?)\b'
+  - '\bte diagnostico\b'
+  - '\b(tienes|sufres de|padeces) (depresion|demencia|alzheimer|ansiedad cronica)\b'
