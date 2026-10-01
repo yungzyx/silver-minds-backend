@@ -112,6 +112,8 @@ Sigue pendiente: registrar en la auditoría cuándo actúa el dispositivo y no l
 
 ## Límites conocidos del MVP
 
+- La pantalla de apoyo del dispositivo superponía el texto a los teléfonos de ayuda; se
+  corrigió al tomar las capturas del README. No tiene prueba automática: es CSS.
 - Sin límite de peticiones por cliente.
 - Aislamiento entre usuarios en la capa de aplicación; sin RLS.
 - La transmisión de cámara exige una sola instancia de la API.
