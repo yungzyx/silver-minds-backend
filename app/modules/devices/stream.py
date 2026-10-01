@@ -30,6 +30,8 @@ AUTH_TIMEOUT_SECONDS = 5.0
 MAX_FRAME_BYTES = 300_000
 MIN_FRAME_INTERVAL = 0.1  # como máximo 10 cuadros por segundo
 REVALIDATE_SECONDS = 15.0
+MIN_ENABLE_INTERVAL = 1.0  # encender la cámara, como máximo una vez por segundo
+MAX_COMMAND_CHARS = 200
 CLOSE_UNAUTHORIZED = 4401
 CLOSE_FORBIDDEN = 4403
 JPEG_MAGIC = b"\xff\xd8\xff"
@@ -82,7 +84,7 @@ async def device_stream(socket: WebSocket) -> None:
     device_id, owner_id, sharing = identity
     await socket.send_json({"type": "ready", "camera_sharing": sharing})
     await hub.attach_device(owner_id, socket, sharing)
-    last_frame = last_check = 0.0
+    last_frame = last_check = last_enable = 0.0
     try:
         while True:
             message = await socket.receive()
@@ -95,7 +97,17 @@ async def device_stream(socket: WebSocket) -> None:
                     await socket.close(code=CLOSE_FORBIDDEN)
                     break
             if message.get("text") is not None:
-                await _handle_device_command(socket, device_id, owner_id, message["text"])
+                enabled = _camera_command(message["text"])
+                if enabled is None:
+                    continue
+                # Apagar la cámara nunca se descarta. Encenderla se limita a una vez por
+                # segundo; si se descarta, el dispositivo recibe el estado vigente.
+                if enabled and now - last_enable < MIN_ENABLE_INTERVAL:
+                    await socket.send_json({"type": "camera", "enabled": False})
+                    continue
+                if enabled:
+                    last_enable = now
+                await _apply_camera(socket, device_id, owner_id, enabled)
             elif message.get("bytes") is not None:
                 frame = message["bytes"]
                 acceptable = (
@@ -112,16 +124,23 @@ async def device_stream(socket: WebSocket) -> None:
         await hub.detach_device(owner_id, socket)
 
 
-async def _handle_device_command(
-    socket: WebSocket, device_id: uuid.UUID, owner_id: uuid.UUID, raw: str
-) -> None:
+def _camera_command(raw: str) -> bool | None:
+    """Devuelve el estado pedido, o ``None`` si el mensaje no es una orden de cámara."""
+    if len(raw) > MAX_COMMAND_CHARS:
+        return None
     try:
         command = json.loads(raw)
     except ValueError:
-        return
+        return None
     if not isinstance(command, dict) or command.get("type") != "camera":
-        return
-    enabled = await run_in_threadpool(_set_camera, device_id, bool(command.get("enabled")))
+        return None
+    return command.get("enabled") is True
+
+
+async def _apply_camera(
+    socket: WebSocket, device_id: uuid.UUID, owner_id: uuid.UUID, enabled: bool
+) -> None:
+    enabled = await run_in_threadpool(_set_camera, device_id, enabled)
     await hub.set_sharing(owner_id, enabled)
     await socket.send_json({"type": "camera", "enabled": enabled})
 
@@ -178,12 +197,15 @@ async def family_stream(socket: WebSocket) -> None:
     await hub.add_viewer(owner_id, Viewer(access_id=access_id, name=name, socket=socket))
     try:
         while True:
-            # La familia no envía nada; el ciclo detecta la desconexión y revalida el permiso.
-            with contextlib.suppress(TimeoutError):
-                await asyncio.wait_for(socket.receive_text(), REVALIDATE_SECONDS)
+            # El permiso se vuelve a comprobar al entrar y luego a intervalos fijos: los
+            # mensajes que envíe la familia no adelantan ni multiplican esa consulta.
             if not await run_in_threadpool(_viewer_still_allowed, access_id):
                 await socket.close(code=CLOSE_FORBIDDEN)
                 break
+            deadline = time.monotonic() + REVALIDATE_SECONDS
+            while (remaining := deadline - time.monotonic()) > 0:
+                with contextlib.suppress(TimeoutError):
+                    await asyncio.wait_for(socket.receive_text(), remaining)
     except (WebSocketDisconnect, RuntimeError):
         pass
     finally:

@@ -33,6 +33,15 @@ def find_active_by_email(db: Session, owner_id: uuid.UUID, email: str) -> Contac
     return db.execute(statement).scalar_one_or_none()
 
 
+def has_declined(db: Session, owner_id: uuid.UUID, email: str) -> bool:
+    statement = select(Contact.id).where(
+        Contact.owner_id == owner_id,
+        func.lower(Contact.email) == email.lower(),
+        Contact.status == "declined",
+    )
+    return db.execute(statement).first() is not None
+
+
 def get_by_consent_hash(db: Session, token_hash: str, *, lock: bool = False) -> Contact | None:
     statement = select(Contact).where(Contact.consent_token_hash == token_hash)
     if lock:

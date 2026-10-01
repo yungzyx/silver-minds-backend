@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 SEND_TIMEOUT_SECONDS = 1.0
 CLOSE_REVOKED = 4403
+CLOSE_SLOW = 4408  # la conexión no recibe los cuadros a tiempo
+CLOSE_REPLACED = 4000  # el mismo dispositivo se conectó desde otra ventana
 
 
 @dataclass
@@ -88,7 +90,7 @@ class StreamHub:
         previous = room.publisher
         room.publisher, room.sharing = socket, sharing
         if previous is not None and previous is not socket:
-            await self._close(previous, 4000)
+            await self._close(previous, CLOSE_REPLACED)
         await self._status_to_viewers(owner_id)
         await self._viewers_to_device(owner_id)
 
@@ -123,14 +125,22 @@ class StreamHub:
         room = self._rooms.get(owner_id)
         if room is None or not room.sharing:
             return 0
-        delivered = 0
-        for viewer in list(room.viewers.values()):
-            try:
-                await asyncio.wait_for(viewer.socket.send_bytes(frame), SEND_TIMEOUT_SECONDS)
-                delivered += 1
-            except Exception:  # noqa: BLE001
+        viewers = list(room.viewers.values())
+        # En paralelo: una conexión lenta no retrasa al dispositivo ni a los demás.
+        results = await asyncio.gather(*(self._send_frame(v, frame) for v in viewers))
+        for viewer, delivered in zip(viewers, results, strict=True):
+            if not delivered:
                 await self.remove_viewer(owner_id, viewer.access_id)
-        return delivered
+                await self._close(viewer.socket, CLOSE_SLOW)
+        return sum(results)
+
+    @staticmethod
+    async def _send_frame(viewer: Viewer, frame: bytes) -> bool:
+        try:
+            await asyncio.wait_for(viewer.socket.send_bytes(frame), SEND_TIMEOUT_SECONDS)
+        except Exception:  # noqa: BLE001 - un socket caído no debe afectar a los demás
+            return False
+        return True
 
     async def kick_access(self, access_id: uuid.UUID) -> None:
         """Corta de inmediato la transmisión de un acceso revocado."""

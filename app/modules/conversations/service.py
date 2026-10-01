@@ -9,7 +9,7 @@ import logging
 import uuid
 from datetime import timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
@@ -17,7 +17,7 @@ from app.core.config import get_settings
 from app.core.errors import NotFoundError, QuotaExceededError
 from app.integrations import registry
 from app.integrations.ai.base import AIError, ContactRef, ContextItem, Turn
-from app.models import Conversation, Message, Profile
+from app.models import AudioUpload, Conversation, Job, Message, Profile
 from app.modules.actions import proposals as proposal_service
 from app.modules.actions.schemas import ProposalOut
 from app.modules.contacts import repository as contacts
@@ -73,7 +73,11 @@ def list_messages(db: Session, owner_id: uuid.UUID, conversation_id: uuid.UUID) 
 
 
 def delete_conversation(db: Session, owner_id: uuid.UUID, conversation_id: uuid.UUID) -> None:
-    db.delete(get_conversation(db, owner_id, conversation_id))
+    conversation = get_conversation(db, owner_id, conversation_id)
+    # Los trabajos de audio guardan la transcripción en su resultado: se van con ella.
+    audio_jobs = select(AudioUpload.job_id).where(AudioUpload.conversation_id == conversation.id)
+    db.execute(delete(Job).where(Job.id.in_(audio_jobs), Job.owner_id == owner_id))
+    db.delete(conversation)
 
 
 def _recent_turns(db: Session, conversation_id: uuid.UUID) -> list[Turn]:

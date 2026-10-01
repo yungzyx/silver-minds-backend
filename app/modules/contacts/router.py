@@ -2,9 +2,10 @@
 
 import uuid
 
+import anyio.from_thread
 from fastapi import APIRouter, status
 
-from app.api.deps import CurrentProfile, DbSession
+from app.api.deps import AccountProfile, CurrentProfile, DbSession
 from app.modules.contacts import repository, service
 from app.modules.contacts.schemas import (
     ConsentDecision,
@@ -14,6 +15,7 @@ from app.modules.contacts.schemas import (
     ContactOut,
     ContactUpdate,
 )
+from app.modules.devices.hub import hub
 
 router = APIRouter(tags=["contactos"])
 
@@ -31,13 +33,13 @@ def list_contacts(db: DbSession, profile: CurrentProfile) -> ContactList:
     summary="Agregar un contacto",
     description="Queda `pending` y se le envía un correo para que acepte o rechace participar.",
 )
-def create_contact(data: ContactIn, db: DbSession, profile: CurrentProfile) -> ContactOut:
+def create_contact(data: ContactIn, db: DbSession, profile: AccountProfile) -> ContactOut:
     return ContactOut.model_validate(service.create_contact(db, profile.id, data))
 
 
 @router.patch("/contacts/{contact_id}", response_model=ContactOut, summary="Editar un contacto")
 def update_contact(
-    contact_id: uuid.UUID, changes: ContactUpdate, db: DbSession, profile: CurrentProfile
+    contact_id: uuid.UUID, changes: ContactUpdate, db: DbSession, profile: AccountProfile
 ) -> ContactOut:
     return ContactOut.model_validate(service.update_contact(db, profile.id, contact_id, changes))
 
@@ -48,8 +50,12 @@ def update_contact(
     summary="Revocar un contacto",
     description="Cancela además los envíos pendientes hacia ese contacto.",
 )
-def revoke_contact(contact_id: uuid.UUID, db: DbSession, profile: CurrentProfile) -> ContactOut:
-    return ContactOut.model_validate(service.revoke_contact(db, profile.id, contact_id))
+def revoke_contact(contact_id: uuid.UUID, db: DbSession, profile: AccountProfile) -> ContactOut:
+    contact, access_ids = service.revoke_contact(db, profile.id, contact_id)
+    db.commit()  # la revocación queda confirmada antes de cortar la transmisión
+    for access_id in access_ids:
+        anyio.from_thread.run(hub.kick_access, access_id)
+    return ContactOut.model_validate(contact)
 
 
 @router.get(
@@ -66,7 +72,12 @@ def view_consent(token: str, db: DbSession) -> ConsentView:
     "/contact-consents/{token}",
     response_model=ConsentView,
     summary="Aceptar o rechazar (público)",
+    description="Quien aceptó puede retirar su aceptación más tarde con `decline`.",
 )
 def decide_consent(token: str, body: ConsentDecision, db: DbSession) -> ConsentView:
-    service.decide_consent(db, token, body.decision)
-    return service.consent_view(db, token)
+    _, access_ids = service.decide_consent(db, token, body.decision)
+    view = service.consent_view(db, token)
+    db.commit()
+    for access_id in access_ids:
+        anyio.from_thread.run(hub.kick_access, access_id)
+    return view

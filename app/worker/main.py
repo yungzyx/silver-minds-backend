@@ -40,7 +40,7 @@ def run_once(worker_id: str = "worker", now: datetime | None = None) -> bool:
         _retry_or_fail(job_id, now, exc.reason, exc.delay_seconds)
     except Exception as exc:  # noqa: BLE001 - un trabajo defectuoso no debe tumbar el worker
         # Solo el tipo: el mensaje de la excepción podría contener datos personales.
-        logger.exception("Trabajo %s (%s) falló: %s", job_id, kind, type(exc).__name__)
+        logger.error("Trabajo %s (%s) falló: %s", job_id, kind, type(exc).__name__)
         _retry_or_fail(job_id, now, type(exc).__name__, None)
     else:
         _finish(job_id, "succeeded", result or {}, None)

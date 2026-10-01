@@ -27,4 +27,6 @@ RUN useradd --create-home --uid 10001 appuser \
 USER appuser
 
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# --ws-max-size: un cuadro de cámara pesa como máximo 300 kB.
+# --no-access-log: los enlaces de aceptación llevan un token en la ruta.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --ws-max-size 400000 --no-access-log"]

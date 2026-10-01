@@ -414,6 +414,13 @@ async function powerOn() {
     onSharing: (sharing) => showCamera(sharing),
     onPresence: (value) => api.post("/device/events", { kind: "presence", value }).catch(() => {}),
     onProblem: (text) => (ui.micStatus.textContent = text),
+    onReplaced: () => {
+      voice.silence();
+      ui.call.disabled = true;
+      ui.cameraToggle.disabled = true;
+      ui.power.textContent = "Este dispositivo se abrió en otra ventana. Recarga para usarlo aquí.";
+      ui.device.dataset.state = "off";
+    },
   });
   ui.call.disabled = false;
   ui.cameraToggle.disabled = false;

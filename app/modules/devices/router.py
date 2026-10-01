@@ -54,6 +54,7 @@ def list_devices(db: DbSession, profile: AccountProfile) -> DeviceList:
 )
 def revoke_device(device_id: uuid.UUID, db: DbSession, profile: AccountProfile) -> DeviceOut:
     device = service.revoke_device(db, profile.id, device_id)
+    db.commit()  # confirmado antes de cortar: una reconexión ya no encuentra el permiso
     anyio.from_thread.run(hub.kick_device, profile.id)
     return DeviceOut.model_validate(device)
 
@@ -91,6 +92,7 @@ def edit_access(
     access_id: uuid.UUID, data: FamilyAccessEdit, db: DbSession, profile: AccountProfile
 ) -> FamilyAccessOut:
     access = service.edit_access(db, profile.id, access_id, data.can_view_camera)
+    db.commit()
     if not access.can_view_camera:
         anyio.from_thread.run(hub.kick_access, access.id)
     return FamilyAccessOut.model_validate(access)
@@ -105,6 +107,7 @@ def edit_access(
 )
 def revoke_access(access_id: uuid.UUID, db: DbSession, profile: AccountProfile) -> FamilyAccessOut:
     access = service.revoke_access(db, profile.id, access_id)
+    db.commit()
     anyio.from_thread.run(hub.kick_access, access.id)
     return FamilyAccessOut.model_validate(access)
 

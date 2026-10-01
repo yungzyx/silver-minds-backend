@@ -57,7 +57,11 @@ class TokenVerifier:
         if self._jwks and algorithm in ASYMMETRIC_ALGORITHMS:
             key = self._jwks.get_signing_key_from_jwt(token).key
             algorithms = list(ASYMMETRIC_ALGORITHMS)
-        elif self._settings.supabase_jwt_secret and algorithm == "HS256":
+        elif (
+            self._settings.supabase_jwt_secret
+            and algorithm == "HS256"
+            and self._settings.environment != "production"
+        ):
             key = self._settings.supabase_jwt_secret.get_secret_value()
             algorithms = ["HS256"]
         else:

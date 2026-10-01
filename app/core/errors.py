@@ -82,7 +82,9 @@ def register_error_handlers(app: FastAPI) -> None:
         return _envelope(exc.status_code, code, str(exc.detail))
 
     @app.exception_handler(Exception)
-    async def _unexpected(_: Request, exc: Exception) -> JSONResponse:
+    async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
         # El detalle queda en el log del servidor; el cliente no recibe datos internos.
-        logger.exception("Error no controlado: %s", type(exc).__name__)
+        # Sin el mensaje ni la ruta: podrían incluir parámetros de SQL, correos o tokens.
+        route = getattr(request.scope.get("route"), "path", "ruta desconocida")
+        logger.error("Error no controlado en %s: %s", route, type(exc).__name__)
         return _envelope(500, "internal_error", "Ocurrió un error inesperado.")
