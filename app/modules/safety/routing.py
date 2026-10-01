@@ -64,6 +64,10 @@ def decide(
     # marca intención: también se pregunta.
     if moderation.self_harm_intent:
         return Route.clarify
+    # «No es que quiera matarme, pero ya no le veo sentido a nada»: la negación cubre una
+    # parte del mensaje y la expresión ambigua queda sin explicar.
+    if rules.ambiguous and classification.negated:
+        return Route.clarify
     return Route.normal
 
 

@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     openai_transcription_model: str = "gpt-4o-mini-transcribe"
     openai_tts_model: str = "gpt-4o-mini-tts"
     openai_tts_voice: str = "alloy"
+    openai_tts_instructions: str = (
+        "Habla en español de Chile, con tono cálido, cercano y tranquilo. Ritmo pausado y "
+        "claro, como una persona que conversa sin apuro."
+    )
     openai_timeout_seconds: float = 30.0
 
     # Voz: "ai" usa el proveedor de IA (simulado u OpenAI); "elevenlabs" usa ElevenLabs.

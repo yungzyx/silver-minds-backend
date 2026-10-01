@@ -157,7 +157,7 @@ def test_classifier_uses_structured_output_and_versions_itself(provider, stub) -
     assert result == expected
     assert call["text_format"] is SafetyClassification and call["temperature"] == 0
     assert "antes" in call["input"]
-    assert provider.classifier_version == "openai:gpt-4.1-mini:safety_classifier.v1"
+    assert provider.classifier_version == "openai:gpt-4.1-mini:safety_classifier.v2"
 
 
 def test_embeddings_keep_input_order(provider, stub) -> None:

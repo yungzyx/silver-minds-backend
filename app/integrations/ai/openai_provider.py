@@ -160,6 +160,7 @@ class OpenAIProvider:
                 model=self._settings.openai_tts_model,
                 voice=self._settings.openai_tts_voice,
                 input=text[:TTS_MAX_CHARS],
+                instructions=self._settings.openai_tts_instructions,
                 response_format="mp3",
             )
             return response.read()
