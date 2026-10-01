@@ -96,6 +96,8 @@ Los correos simulados quedan en `var/outbox/`.
 | `uv run python -m app.cli eval-rag` | 30 consultas con fuentes esperadas |
 | `uv run python -m app.cli eval-safety` | 52 escenarios sintéticos con señales simuladas |
 | `uv run python -m app.cli eval-safety --live` | Los mismos escenarios contra el proveedor real |
+| `uv run python -m app.cli check-ai` | Una llamada mínima por capacidad al proveedor de IA |
+| `uv run python -m app.cli reindex` | Regenera los embeddings con el proveedor configurado |
 | `uv run python -m app.cli dev-token` | JWT local para probar la API como cuenta |
 
 ## Pruebas
@@ -128,6 +130,29 @@ Cada integración se activa con variables de entorno; ver [.env.example](.env.ex
 | Supabase Auth | `SUPABASE_JWKS_URL` | Verificación probada con claves ES256 locales |
 
 `GET /api/v1/health/ready` indica qué adaptadores están activos.
+
+### Conectar OpenAI
+
+1. Agrega tu clave a `.env` (nunca al repositorio ni a un chat): `OPENAI_API_KEY=...`
+2. En el mismo archivo cambia `AI_PROVIDER=fake` por `AI_PROVIDER=openai`.
+3. Comprueba credenciales y modelos con una llamada mínima por capacidad:
+
+```bash
+uv run python -m app.cli check-ai
+```
+
+4. Reconstruye el índice: los vectores del simulador no son comparables con los de OpenAI.
+   Hasta hacerlo, la recuperación usa solo búsqueda por texto.
+
+```bash
+uv run python -m app.cli reindex
+```
+
+5. Repite las evaluaciones con el modelo real y reinicia la API y el worker:
+
+```bash
+uv run python -m app.cli eval-rag && uv run python -m app.cli eval-safety --live
+```
 
 ## Documentación
 

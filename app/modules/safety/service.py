@@ -6,6 +6,7 @@ no sea ``normal`` no hay propuestas, memorias candidatas ni envíos rutinarios.
 
 import logging
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -33,6 +34,7 @@ from app.modules.safety.routing import (
 from app.modules.safety.schemas import ResourceOut, SupportContact, SupportOptions
 
 logger = logging.getLogger(__name__)
+_LAYERS = ThreadPoolExecutor(max_workers=4, thread_name_prefix="safety")
 
 
 @dataclass(frozen=True)
@@ -109,8 +111,11 @@ def evaluate_turn(
 ) -> SafetyDecision:
     policy = get_policy()
     signals = rule_layer.evaluate(message, policy.rules)
-    moderation = _moderate(message)
+    # Las dos capas son llamadas independientes al proveedor: en paralelo, la persona
+    # espera la mitad.
+    pending_moderation = _LAYERS.submit(_moderate, message)
     classification = _classify(message, recent_turns)
+    moderation = pending_moderation.result()
     route = decide(signals, moderation, classification)
     bypass = signals.bypass or (classification is not None and classification.bypass_attempt)
 

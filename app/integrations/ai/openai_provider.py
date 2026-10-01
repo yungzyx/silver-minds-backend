@@ -71,6 +71,7 @@ class OpenAIProvider:
             max_retries=2,
         )
         self.classifier_version = f"openai:{settings.openai_text_model}:{CLASSIFIER_PROMPT_VERSION}"
+        self.embedding_model = f"openai:{settings.openai_embedding_model}"
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         try:

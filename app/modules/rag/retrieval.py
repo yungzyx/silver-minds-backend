@@ -226,6 +226,27 @@ def _load(
     return ContextItem("knowledge", str(chunk.id), document.title, chunk.content, document.version)
 
 
+def _query_embedding(db: Session, query: str) -> list[float] | None:
+    """Embedding de la consulta, o ``None`` si solo corresponde buscar por texto."""
+    ai = registry.get_ai()
+    indexed_with = db.execute(select(IndexState.embedding_model)).scalar_one_or_none()
+    if indexed_with is not None and indexed_with != ai.embedding_model:
+        # El índice se construyó con otro modelo: sus vectores no son comparables con los
+        # de este. Falta ejecutar `python -m app.cli reindex`.
+        logger.warning(
+            "Índice generado con %s y proveedor actual %s: se busca solo por texto",
+            indexed_with,
+            ai.embedding_model,
+        )
+        return None
+    try:
+        [embedding] = ai.embed([query])
+    except AIError:
+        logger.warning("No se pudo calcular el embedding de la consulta; se usa solo texto")
+        return None
+    return embedding
+
+
 def retrieve(
     db: Session,
     *,
@@ -238,11 +259,7 @@ def retrieve(
     """Hasta ``retrieval_max_items`` elementos y ``retrieval_max_tokens`` tokens en total."""
     settings = get_settings()
     today = today or utcnow().date()
-    try:
-        [embedding] = registry.get_ai().embed([query])
-    except AIError:
-        logger.warning("No se pudo calcular el embedding de la consulta; se usa solo texto")
-        embedding = None
+    embedding = _query_embedding(db, query)
 
     scores = _search(
         db, owner_id=owner_id, query=query, embedding=embedding, territory=territory, today=today
