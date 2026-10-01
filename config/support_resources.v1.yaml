@@ -1,0 +1,41 @@
+# Recursos de ayuda por país. Configuración versionada, fuera del RAG.
+#
+# Cada recurso se copió de una fuente oficial en la fecha indicada en `verified_at`.
+# Deben revisarse antes de un piloto y luego cada mes: un teléfono desactualizado en
+# este archivo es un riesgo real. No agregar recursos sin fuente oficial.
+version: "2026-10-01.v1"
+professional_review: pending
+review_interval_days: 31
+
+countries:
+  CL:
+    - id: cl-samu-131
+      kind: emergency
+      name: SAMU
+      phone: "131"
+      purpose: Emergencias médicas
+      availability: 24 horas, todos los días
+      cost: Llamada gratuita
+      operator: Ministerio de Salud
+      territory: CL
+      source: SAMU Metropolitano, Preguntas frecuentes
+      source_url: https://www.samu.cl/preguntas-frecuentes/
+      verified_at: 2026-10-01
+      notes: >-
+        La fuente es el sitio del SAMU Metropolitano. Indica que SAMU está presente en
+        todas las regiones; el horario de 24 horas se declara para el servicio
+        metropolitano.
+
+    - id: cl-fono-4141
+      kind: crisis_line
+      name: Fono Prevención del Suicidio
+      phone: "*4141"
+      purpose: Apoyo ante una crisis de salud mental asociada al suicidio
+      availability: 24 horas, todo el año
+      cost: Llamada gratuita y confidencial
+      operator: Subsecretaría de Salud Pública, Ministerio de Salud
+      territory: CL
+      source: Ventanilla Única Social, ficha Fono Prevención Suicidio
+      source_url: https://www.ventanillaunicasocial.gob.cl/ficha/310/fono-prevencion-suicidio
+      verified_at: 2026-10-01
+      notes: Según la ficha oficial, atiende una persona psicóloga, desde celulares o red fija.
