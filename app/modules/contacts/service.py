@@ -25,6 +25,9 @@ DEFAULT_INVITER_NAME = "Una persona que usa Silver Minds"
 def create_contact(db: Session, owner_id: uuid.UUID, data: ContactIn) -> Contact:
     if repository.find_active_by_email(db, owner_id, data.email) is not None:
         raise ConflictError("Ya tienes un contacto activo con ese correo.")
+    if repository.has_declined(db, owner_id, data.email):
+        # Quien rechazó participar no vuelve a recibir solicitudes de esta persona.
+        raise ConflictError("Esa persona rechazó participar.", code="contact_declined")
     contact = Contact(
         owner_id=owner_id,
         name=data.name.strip(),
@@ -73,14 +76,15 @@ def update_contact(
     return contact
 
 
-def revoke_contact(db: Session, owner_id: uuid.UUID, contact_id: uuid.UUID) -> Contact:
-    """Revoca y, en la misma transacción, cancela todo envío que aún no salió."""
-    contact = _owned_contact(db, owner_id, contact_id)
-    if contact.status == "revoked":
-        return contact
-    contact.status = "revoked"
-    contact.revoked_at = utcnow()
-    contact.consent_token_hash = None
+def _withdraw(db: Session, contact: Contact, status: str) -> list[uuid.UUID]:
+    """Deja al contacto fuera y cancela, en la misma transacción, lo que aún no salió.
+
+    Devuelve los accesos familiares revocados para cortar su transmisión en curso.
+    """
+    contact.status = status
+    if status == "revoked":
+        contact.revoked_at = utcnow()
+        contact.consent_token_hash = None
     if contact.consent_delivery == "queued":
         contact.consent_delivery = "cancelled"
     db.execute(
@@ -95,12 +99,25 @@ def revoke_contact(db: Session, owner_id: uuid.UUID, contact_id: uuid.UUID) -> C
         )
         .values(status="cancelled")
     )
-    db.execute(
-        update(FamilyAccess)
-        .where(FamilyAccess.contact_id == contact.id, FamilyAccess.status == "active")
-        .values(status="revoked", revoked_at=utcnow(), token_hash=None)
+    access_ids = list(
+        db.execute(
+            update(FamilyAccess)
+            .where(FamilyAccess.contact_id == contact.id, FamilyAccess.status == "active")
+            .values(status="revoked", revoked_at=utcnow(), token_hash=None)
+            .returning(FamilyAccess.id)
+        ).scalars()
     )
     db.flush()
+    return access_ids
+
+
+def revoke_contact(
+    db: Session, owner_id: uuid.UUID, contact_id: uuid.UUID
+) -> tuple[Contact, list[uuid.UUID]]:
+    contact = _owned_contact(db, owner_id, contact_id)
+    if contact.status == "revoked":
+        return contact, []
+    access_ids = _withdraw(db, contact, "revoked")
     audit.record(
         db,
         owner_id=owner_id,
@@ -109,7 +126,7 @@ def revoke_contact(db: Session, owner_id: uuid.UUID, contact_id: uuid.UUID) -> C
         entity_type="contact",
         entity_id=contact.id,
     )
-    return contact
+    return contact, access_ids
 
 
 def _inviter_name(db: Session, owner_id: uuid.UUID) -> str:
@@ -134,21 +151,28 @@ def consent_view(db: Session, token: str, now: datetime | None = None) -> Consen
     )
 
 
-def decide_consent(db: Session, token: str, decision: str, now: datetime | None = None) -> Contact:
+def decide_consent(
+    db: Session, token: str, decision: str, now: datetime | None = None
+) -> tuple[Contact, list[uuid.UUID]]:
     contact = repository.get_by_consent_hash(db, hash_token(token), lock=True)
     if contact is None:
         raise NotFoundError("El enlace no es válido.")
     target = DECISION_STATUS[decision]
     if contact.status == target:
-        return contact  # repetir la misma respuesta no cambia nada
-    if contact.status != "pending":
+        return contact, []  # repetir la misma respuesta no cambia nada
+    access_ids: list[uuid.UUID] = []
+    if contact.status == "accepted" and target == "declined":
+        # Quien aceptó puede retirar su aceptación cuando quiera, aunque el enlace venciera.
+        access_ids = _withdraw(db, contact, "declined")
+    elif contact.status != "pending":
         raise ConflictError("Esta solicitud ya fue respondida.")
-    if _is_expired(contact, now or utcnow()):
+    elif _is_expired(contact, now or utcnow()):
         raise TokenExpiredError("El enlace venció. Pide que te inviten de nuevo.")
-    contact.status = target
-    if target == "accepted":
-        contact.accepted_at = now or utcnow()
-    db.flush()
+    else:
+        contact.status = target
+        if target == "accepted":
+            contact.accepted_at = now or utcnow()
+        db.flush()
     audit.record(
         db,
         owner_id=contact.owner_id,
@@ -157,7 +181,7 @@ def decide_consent(db: Session, token: str, decision: str, now: datetime | None 
         entity_type="contact",
         entity_id=contact.id,
     )
-    return contact
+    return contact, access_ids
 
 
 def _prepare_consent_email(db: Session, contact: Contact) -> EmailMessage | None:

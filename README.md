@@ -55,7 +55,7 @@ uv run alembic upgrade head
 API (sirve también el dispositivo y el panel):
 
 ```bash
-uv run uvicorn app.main:app --port 8000
+uv run uvicorn app.main:app --port 8000 --ws-max-size 400000
 ```
 
 Worker, en otra terminal:

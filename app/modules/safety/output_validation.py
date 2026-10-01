@@ -62,11 +62,22 @@ def _memory_forbidden() -> re.Pattern[str]:
     return re.compile("|".join(f"(?:{p})" for p in patterns))
 
 
-def _reply_is_acceptable(reply: str) -> bool:
+_LINK = re.compile(r"https?://|www\.", re.IGNORECASE)
+
+
+def _proposal_is_acceptable(proposal: ProposalDraft) -> bool:
+    """El texto de una propuesta termina en un correo: sin enlaces ni afirmaciones clínicas."""
+    text = f"{proposal.title}\n{proposal.body}"
+    return not _LINK.search(text) and _forbidden().search(normalize(text)) is None
+
+
+def _reply_is_acceptable(reply: str, proposals: list[ProposalDraft]) -> bool:
     if not reply.strip() or _forbidden().search(normalize(reply)):
         return False
+    # Se modera todo lo que la persona verá o podría enviar, no solo la respuesta.
+    visible = "\n".join([reply, *(f"{p.title}\n{p.body}" for p in proposals)])
     try:
-        return not registry.get_ai().moderate(reply).flagged
+        return not registry.get_ai().moderate(visible).flagged
     except AIError:
         # Sin poder comprobar el texto, no se muestra.
         logger.warning("La moderación de salida falló; se usa el texto fijo")
@@ -84,7 +95,7 @@ def _is_safe_memory(candidate: MemoryDraft) -> bool:
 def validate(
     draft: AgentDraft, *, items: list[ContextItem], contacts: list[ContactRef]
 ) -> ValidatedOutput:
-    if not _reply_is_acceptable(draft.reply):
+    if not _reply_is_acceptable(draft.reply, draft.proposals):
         return ValidatedOutput(reply=get_policy().output_fallback.strip(), replaced=True)
 
     by_id = {item.id: item for item in items}
@@ -95,6 +106,8 @@ def validate(
     for proposal in draft.proposals:
         if len(proposals) >= MAX_PROPOSALS:
             break
+        if not _proposal_is_acceptable(proposal):
+            continue
         activity = None
         if proposal.activity_id is not None:
             activity = activities.get(proposal.activity_id)

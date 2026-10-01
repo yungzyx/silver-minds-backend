@@ -1,17 +1,24 @@
 // Utilidades compartidas: token del enlace y llamadas autenticadas a la API.
 
 const API_BASE = "/api/v1";
+const REPLACE_PAIRING =
+  "Esta pantalla ya está vinculada a una cuenta. El enlace que abriste la vincularía a " +
+  "otra. ¿Quieres reemplazar el vínculo actual? Si no reconoces el enlace, elige Cancelar.";
 
 /** Lee el token del fragmento (#token=...), lo guarda y limpia la barra de direcciones.
  *  El fragmento nunca se envía al servidor, así que el token no queda en sus registros. */
 export function readToken(storageKey) {
   const params = new URLSearchParams(window.location.hash.slice(1));
   const fromLink = params.get("token");
-  if (fromLink) {
-    window.localStorage.setItem(storageKey, fromLink);
-    window.history.replaceState(null, "", window.location.pathname);
-  }
-  return fromLink || window.localStorage.getItem(storageKey);
+  const stored = window.localStorage.getItem(storageKey);
+  if (!fromLink) return stored;
+  window.history.replaceState(null, "", window.location.pathname);
+  // Un enlace ajeno podría vincular esta pantalla a la cuenta de otra persona: si ya
+  // hay un emparejamiento distinto, solo se reemplaza con una confirmación explícita.
+  const replaces = stored && stored !== fromLink;
+  if (replaces && !window.confirm(REPLACE_PAIRING)) return stored;
+  window.localStorage.setItem(storageKey, fromLink);
+  return fromLink;
 }
 
 // Si se pega un enlace nuevo con la página ya abierta, solo cambia el fragmento y el

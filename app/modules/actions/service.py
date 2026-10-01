@@ -285,10 +285,25 @@ def _expired(invitation: Invitation, now: datetime) -> bool:
     return invitation.token_expires_at is not None and invitation.token_expires_at < now
 
 
+def _sent_proposal(db: Session, invitation: Invitation) -> Proposal:
+    """La propuesta tal como se envió. Si cambió o el contacto ya no participa, no se muestra.
+
+    Evita exponer un borrador sin aprobar y deja sin efecto el enlace de un contacto revocado.
+    """
+    contact = db.get(Contact, invitation.contact_id)
+    if contact is None or contact.status != "accepted":
+        raise NotFoundError("El enlace no es válido.")
+    proposal = db.get(Proposal, invitation.proposal_id)
+    current = proposal is not None and proposal.status in ("approved", "completed")
+    if not current or proposal.approved_version != invitation.proposal_version:
+        raise ConflictError("Esta invitación cambió o fue cancelada.", code="invitation_superseded")
+    return proposal
+
+
 def invitation_view(db: Session, token: str, now: datetime | None = None) -> InvitationView:
     """Solo lectura: abrir el enlace no modifica estado."""
     invitation = _invitation_by_token(db, token)
-    proposal = db.get(Proposal, invitation.proposal_id)
+    proposal = _sent_proposal(db, invitation)
     profile = db.get(Profile, invitation.owner_id)
     return InvitationView(
         inviter_name=(profile.preferred_name if profile else None) or DEFAULT_INVITER_NAME,
@@ -304,6 +319,7 @@ def respond_invitation(
     db: Session, token: str, response: str, now: datetime | None = None
 ) -> Invitation:
     invitation = _invitation_by_token(db, token, lock=True)
+    _sent_proposal(db, invitation)
     target = RESPONSE_STATUS[response]
     if invitation.status == target:
         return invitation

@@ -25,6 +25,27 @@ depende de terceros. No describe intenciones como si fueran hechos.
 Cada fase se integró a `main` con un merge propio. No hubo pull requests: las ramas se
 integraron en local antes de crear el repositorio remoto.
 
+## Revisión de seguridad
+
+Una revisión independiente del código no encontró fallas críticas ni altas: el
+aislamiento entre personas usuarias se sostiene en todas las rutas revisadas. Sus once
+hallazgos medios y bajos se corrigieron en `codex/security-hardening`:
+
+- El token del dispositivo ya no puede crear, editar ni revocar contactos.
+- Un enlace no reemplaza en silencio el emparejamiento de una pantalla.
+- Las transcripciones no sobreviven en los resultados de trabajos más allá de la retención.
+- La carga de audio se rechaza por su tamaño declarado, antes de almacenarla.
+- WebSocket: tope de tamaño de mensaje, envío en paralelo y permiso revalidado al entrar.
+  Apagar la cámara nunca se descarta.
+- Las revocaciones se confirman antes de cortar la transmisión.
+- Producción exige claves asimétricas y emisor verificado, y rechaza el secreto de ejemplo.
+- Un enlace de invitación no muestra una propuesta editada ni sirve a un contacto revocado.
+- Título y cuerpo de una propuesta pasan la validación de salida; sin enlaces.
+- Los registros no incluyen mensajes de excepción ni rutas con tokens.
+- Quien aceptó puede retirar su aceptación, y quien rechazó no vuelve a recibir solicitudes.
+
+Sigue pendiente: registrar en la auditoría cuándo actúa el dispositivo y no la cuenta.
+
 ## Verificado localmente
 
 - Pruebas con PostgreSQL 17 real y pgvector 0.8.6; la suite corre también en CI.

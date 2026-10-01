@@ -16,8 +16,17 @@ const MOTION_THRESHOLD = 0.02;
 const MOTION_WIDTH = 32;
 const MOTION_HEIGHT = 24;
 const RECONNECT_MS = 3000;
+const CLOSE_REPLACED = 4000; // el mismo dispositivo se abrió en otra ventana
 
-export function createCamera({ video, token, onViewers, onSharing, onPresence, onProblem }) {
+export function createCamera({
+  video,
+  token,
+  onViewers,
+  onSharing,
+  onPresence,
+  onProblem,
+  onReplaced,
+}) {
   let socket = null;
   let media = null;
   let sharing = false;
@@ -42,6 +51,13 @@ export function createCamera({ video, token, onViewers, onSharing, onPresence, o
     };
     socket.onclose = (event) => {
       if (event.code === 4401 || event.code === 4403) return; // token inválido o revocado
+      if (event.code === CLOSE_REPLACED) {
+        // Otra ventana tomó el lugar de este dispositivo. No se reconecta: dos ventanas
+        // compitiendo se desconectarían una a otra y apagarían la cámara de la otra.
+        stopCapture();
+        onReplaced();
+        return;
+      }
       window.setTimeout(connect, RECONNECT_MS);
     };
   }
@@ -52,7 +68,9 @@ export function createCamera({ video, token, onViewers, onSharing, onPresence, o
       const started = await startCapture();
       if (!started) {
         // Sin acceso a la cámara no se puede compartir: se deja apagada en el servidor.
+        sharing = false;
         setSharing(false);
+        onSharing(false);
         return;
       }
     } else {

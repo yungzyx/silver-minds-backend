@@ -481,3 +481,38 @@ def test_camera_state_survives_reconnection_and_shows_in_overview(
     assert ready["camera_sharing"] is True
     assert overview["camera"]["sharing"] is True
     assert "Encendió la cámara" in [entry["label"] for entry in overview["timeline"]]
+
+
+def test_a_second_connection_of_the_same_device_replaces_the_first(client: TestClient) -> None:
+    _, headers = new_user(client)
+    _, device_token = new_device(client, headers)
+
+    with client.websocket_connect(f"{API}/device/stream") as first:
+        auth(first, device_token)
+        with client.websocket_connect(f"{API}/device/stream") as second:
+            ready = auth(second, device_token)
+            closed = first.receive()
+            while closed["type"] != "websocket.close":
+                closed = first.receive()
+
+    assert ready["type"] == "ready"
+    assert closed["code"] == 4000  # la página lo interpreta como «abierto en otra ventana»
+
+
+def test_turning_the_camera_off_is_never_throttled(client: TestClient, db: Session) -> None:
+    _, headers = new_user(client)
+    _, device_token = new_device(client, headers)
+
+    with client.websocket_connect(f"{API}/device/stream") as device:
+        auth(device, device_token)
+        device.send_json({"type": "camera", "enabled": True})
+        device.send_json({"type": "camera", "enabled": False})  # inmediatamente después
+        device.send_json({"type": "camera", "enabled": True})  # demasiado pronto: se descarta
+        acks = [until(device, lambda m: m["type"] == "camera")["enabled"] for _ in range(3)]
+
+    kinds = list(db.execute(select(DeviceEvent.kind).order_by(DeviceEvent.created_at)).scalars())
+    assert acks == [True, False, False]
+    assert kinds == ["camera_on", "camera_off"]
+    assert (
+        client.get(f"{API}/devices", headers=headers).json()["items"][0]["camera_sharing"] is False
+    )

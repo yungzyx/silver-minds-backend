@@ -6,6 +6,9 @@ from typing import Literal, Self
 from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+MIN_JWT_SECRET_CHARS = 32
+# Valor de .env.example: se rechaza fuera de desarrollo, no es un secreto real.
+EXAMPLE_JWT_SECRET = "cambia-este-secreto-local-de-al-menos-32-caracteres"  # noqa: S105
 EMBEDDING_DIMENSIONS = 1536  # text-embedding-3-small; fija el tipo de las columnas vector
 
 
@@ -73,6 +76,15 @@ class Settings(BaseSettings):
             missing.append("SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY")
         if not (self.supabase_jwks_url or self.supabase_jwt_secret):
             missing.append("SUPABASE_JWKS_URL o SUPABASE_JWT_SECRET")
+        secret = self.supabase_jwt_secret.get_secret_value() if self.supabase_jwt_secret else ""
+        weak = bool(secret) and (len(secret) < MIN_JWT_SECRET_CHARS or secret == EXAMPLE_JWT_SECRET)
+        if weak and self.environment in ("staging", "production"):
+            raise ValueError("SUPABASE_JWT_SECRET es el de ejemplo o tiene menos de 32 caracteres")
+        if self.environment == "production":
+            if not self.supabase_jwks_url:
+                missing.append("SUPABASE_JWKS_URL (producción no acepta el secreto HS256)")
+            if not self.supabase_url:
+                missing.append("SUPABASE_URL (para verificar el emisor del token)")
         if self.audio_retention_hours >= 24:
             raise ValueError("AUDIO_RETENTION_HOURS debe ser menor que 24")
         if missing:
