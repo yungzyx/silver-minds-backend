@@ -27,6 +27,7 @@ from app.core.db import get_engine, get_session_factory  # noqa: E402
 from app.integrations import registry  # noqa: E402
 from app.integrations.ai.fake import FakeAIProvider  # noqa: E402
 from app.integrations.email.fake import FakeEmailSender  # noqa: E402
+from app.integrations.storage.local import LocalStorage  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.base import Base  # noqa: E402
 
@@ -69,10 +70,14 @@ def client() -> Iterator[TestClient]:
 
 
 @pytest.fixture(autouse=True)
-def providers() -> Iterator[SimpleNamespace]:
+def providers(tmp_path) -> Iterator[SimpleNamespace]:
     """Proveedores simulados nuevos en cada prueba, accesibles para inspeccionarlos."""
-    adapters = SimpleNamespace(ai=FakeAIProvider(), email=FakeEmailSender())
-    registry.override(ai=adapters.ai, email=adapters.email)
+    adapters = SimpleNamespace(
+        ai=FakeAIProvider(),
+        email=FakeEmailSender(),
+        storage=LocalStorage(str(tmp_path / "storage")),
+    )
+    registry.override(ai=adapters.ai, email=adapters.email, storage=adapters.storage)
     yield adapters
     registry.clear_overrides()
 

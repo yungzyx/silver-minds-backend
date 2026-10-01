@@ -8,6 +8,7 @@ from app.modules.devices import service as devices
 from app.modules.followup import maintenance
 from app.modules.memory import service as memory
 from app.modules.safety import support_requests
+from app.modules.voice import service as voice
 
 Handler = Callable[[dict], dict | None]
 
@@ -18,5 +19,6 @@ HANDLERS: dict[str, Handler] = {
     "send_reminder": actions.deliver_reminder,
     "send_family_access": devices.deliver_access,
     "send_support_request": support_requests.deliver_request,
+    "process_audio": voice.process_audio,
     "maintenance": maintenance.run,
 }

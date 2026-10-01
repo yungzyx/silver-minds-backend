@@ -11,6 +11,7 @@ from app.modules.devices import stream
 from app.modules.memory import router as memory
 from app.modules.profiles import router as profiles
 from app.modules.safety import router as safety
+from app.modules.voice import router as voice
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(health.router)
@@ -22,3 +23,4 @@ api_router.include_router(conversations.router)
 api_router.include_router(actions.router)
 api_router.include_router(devices.router)
 api_router.include_router(stream.router)
+api_router.include_router(voice.router)

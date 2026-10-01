@@ -9,10 +9,11 @@ from app.core.clock import utcnow
 from app.core.config import get_settings
 from app.core.db import session_scope
 from app.models import Conversation, SafetyEvent
+from app.modules.voice import service as voice
 
 
 def purge_expired(db: Session, now: datetime) -> dict:
-    """Borra conversaciones y eventos de seguridad más antiguos que su retención."""
+    """Borra conversaciones, eventos de seguridad y audios que superaron su retención."""
     settings = get_settings()
     conversations = db.execute(
         delete(Conversation).where(
@@ -24,7 +25,11 @@ def purge_expired(db: Session, now: datetime) -> dict:
             SafetyEvent.created_at < now - timedelta(days=settings.safety_event_retention_days)
         )
     ).rowcount
-    return {"conversations_deleted": conversations, "safety_events_deleted": events}
+    return {
+        "conversations_deleted": conversations,
+        "safety_events_deleted": events,
+        "audios_deleted": voice.cleanup_expired(db, now),
+    }
 
 
 def run(_payload: dict) -> dict:

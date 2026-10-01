@@ -12,6 +12,9 @@ from app.integrations.ai.fake import FakeAIProvider
 from app.integrations.email.base import EmailSender
 from app.integrations.email.fake import FakeEmailSender
 from app.integrations.email.resend import ResendEmailSender
+from app.integrations.storage.base import Storage
+from app.integrations.storage.local import LocalStorage
+from app.integrations.storage.supabase import SupabaseStorage
 
 _overrides: dict[str, object] = {}
 
@@ -42,9 +45,25 @@ def _default_email() -> EmailSender:
     return FakeEmailSender(settings.local_outbox_dir)
 
 
+@lru_cache
+def _default_storage() -> Storage:
+    settings = get_settings()
+    if settings.storage_provider == "supabase":
+        return SupabaseStorage(
+            settings.supabase_url,
+            settings.supabase_service_role_key.get_secret_value(),
+            settings.supabase_storage_bucket,
+        )
+    return LocalStorage(settings.local_storage_dir)
+
+
 def get_ai() -> AIProvider:
     return _overrides.get("ai") or _default_ai()
 
 
 def get_email() -> EmailSender:
     return _overrides.get("email") or _default_email()
+
+
+def get_storage() -> Storage:
+    return _overrides.get("storage") or _default_storage()
