@@ -168,6 +168,7 @@ conversación, historial ni clasificación interna.
 | `POST /devices/{id}/revoke` | *Solo cuenta.* Revoca y corta la transmisión |
 | `GET /device/session` | *Dispositivo.* Nombre, cámara, quién mira, modo y pendientes. Sirve de latido |
 | `POST /device/events` | *Dispositivo.* `{kind: wake_button \| wake_name \| presence, value?}`. La presencia solo se acepta con la cámara encendida |
+| `POST /device/speech` | *Dispositivo.* `{text}` → audio. `503 voice_unavailable` o `429 voice_quota_exceeded` hacen que el dispositivo use la voz del navegador |
 | `WS /device/stream` | *Dispositivo.* Primer mensaje `{type: "auth", token}`. Luego `{type: "camera", enabled}` y cuadros JPEG |
 
 ## Panel familiar

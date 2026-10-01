@@ -12,6 +12,7 @@ from app.integrations.ai.fake import FakeAIProvider
 from app.integrations.email.base import EmailSender
 from app.integrations.email.fake import FakeEmailSender
 from app.integrations.email.resend import ResendEmailSender
+from app.integrations.speech.elevenlabs import ElevenLabsSpeech
 from app.integrations.storage.base import Storage
 from app.integrations.storage.local import LocalStorage
 from app.integrations.storage.supabase import SupabaseStorage
@@ -55,6 +56,26 @@ def _default_storage() -> Storage:
             settings.supabase_storage_bucket,
         )
     return LocalStorage(settings.local_storage_dir)
+
+
+@lru_cache
+def _elevenlabs() -> ElevenLabsSpeech:
+    settings = get_settings()
+    return ElevenLabsSpeech(
+        settings.elevenlabs_api_key.get_secret_value(),
+        voice_id=settings.elevenlabs_voice_id or None,
+        tts_model=settings.elevenlabs_tts_model,
+        stt_model=settings.elevenlabs_stt_model,
+    )
+
+
+def get_speech() -> AIProvider | ElevenLabsSpeech:
+    """Quien transcribe y habla. Por defecto, el mismo proveedor de IA."""
+    if "speech" in _overrides:
+        return _overrides["speech"]
+    if get_settings().voice_provider == "elevenlabs":
+        return _elevenlabs()
+    return get_ai()
 
 
 def get_ai() -> AIProvider:

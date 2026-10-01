@@ -47,13 +47,14 @@ def _generation(ai: AIProvider) -> str:
     return f"{len(draft.reply)} caracteres"
 
 
-def _speech_and_transcription(ai: AIProvider) -> str:
+def _speech_and_transcription(_: AIProvider) -> str:
+    ai = registry.get_speech()
     audio = ai.synthesize("Hola, esta es una prueba de voz.")
     if not audio:
         raise AIError("síntesis vacía")
     extension = "mp3" if ai.speech_content_type == "audio/mpeg" else "wav"
     text = ai.transcribe(audio=audio, filename=f"prueba.{extension}", language="es")
-    return f"{len(audio)} bytes de audio; transcripción de {len(text)} caracteres"
+    return f"{ai.name}: {len(audio)} bytes de audio; transcripción de {len(text)} caracteres"
 
 
 CHECKS: list[tuple[str, Callable[[AIProvider], str]]] = [

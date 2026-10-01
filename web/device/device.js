@@ -391,8 +391,9 @@ async function refreshSession() {
 }
 
 async function powerOn() {
+  let session;
   try {
-    await refreshSession();
+    session = await refreshSession();
     const contacts = await api.get("/contacts");
     state.contacts = new Map(contacts.items.map((contact) => [contact.id, contact.name]));
   } catch {
@@ -401,6 +402,10 @@ async function powerOn() {
   }
   voice = createVoice({
     language: LANGUAGE,
+    // Con voz en el servidor, cada frase se pide allá; si no, habla el navegador.
+    fetchSpeech: session.server_voice
+      ? (text) => api.postForBlob("/device/speech", { text })
+      : null,
     onFinal: hear,
     onInterim: (text) => {
       if (ui.device.dataset.state === "listening") ui.hint.textContent = text;

@@ -52,6 +52,15 @@ class DeviceSession(BaseModel):
     can_resume: bool
     pending_proposals: int
     pending_memory_candidates: int
+    server_voice: bool = Field(
+        description="El servidor puede hablar. Si es `false`, se usa la voz del navegador."
+    )
+
+
+class SpeechIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=2000)
 
 
 class DeviceEventIn(BaseModel):

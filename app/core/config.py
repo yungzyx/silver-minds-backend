@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     openai_tts_voice: str = "alloy"
     openai_timeout_seconds: float = 30.0
 
+    # Voz: "ai" usa el proveedor de IA (simulado u OpenAI); "elevenlabs" usa ElevenLabs.
+    voice_provider: Literal["ai", "elevenlabs"] = "ai"
+    elevenlabs_api_key: SecretStr | None = None
+    elevenlabs_voice_id: str | None = None
+    elevenlabs_tts_model: str = "eleven_flash_v2_5"
+    elevenlabs_stt_model: str = "scribe_v2"
+    voice_max_chars: int = 1200
+    voice_daily_chars: int = 20000
+
     email_provider: Literal["fake", "resend"] = "fake"
     resend_api_key: SecretStr | None = None
     email_from: str = "Silver Minds <no-reply@example.com>"
@@ -68,6 +77,8 @@ class Settings(BaseSettings):
         missing = []
         if self.ai_provider == "openai" and not self.openai_api_key:
             missing.append("OPENAI_API_KEY")
+        if self.voice_provider == "elevenlabs" and not self.elevenlabs_api_key:
+            missing.append("ELEVENLABS_API_KEY")
         if self.email_provider == "resend" and not self.resend_api_key:
             missing.append("RESEND_API_KEY")
         if self.storage_provider == "supabase" and not (

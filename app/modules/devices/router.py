@@ -3,7 +3,7 @@
 import uuid
 
 import anyio.from_thread
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from app.api.deps import AccountProfile, CurrentDevice, CurrentViewer, DbSession
 from app.modules.devices import metrics, service
@@ -20,6 +20,7 @@ from app.modules.devices.schemas import (
     FamilyAccessList,
     FamilyAccessOut,
     FamilyOverview,
+    SpeechIn,
 )
 
 router = APIRouter()
@@ -138,6 +139,23 @@ def device_session(db: DbSession, device: CurrentDevice) -> DeviceSession:
 )
 def device_event(data: DeviceEventIn, db: DbSession, device: CurrentDevice) -> dict[str, bool]:
     return {"recorded": service.record_event(db, device, data)}
+
+
+@router.post(
+    "/device/speech",
+    tags=DEVICES,
+    summary="Voz para lo que el dispositivo va a decir",
+    description=(
+        "Devuelve audio. Responde `503 voice_unavailable` si no hay proveedor de voz o si "
+        "falla, y `429 voice_quota_exceeded` al superar el límite diario: en ambos casos el "
+        "dispositivo habla con la voz del navegador."
+    ),
+    response_class=Response,
+    responses={200: {"content": {"audio/mpeg": {}}}},
+)
+def device_speech(data: SpeechIn, db: DbSession, device: CurrentDevice) -> Response:
+    audio, content_type = service.synthesize_for_device(db, device, data.text)
+    return Response(content=audio, media_type=content_type, headers={"Cache-Control": "no-store"})
 
 
 # --- Panel familiar -----------------------------------------------------------------

@@ -137,6 +137,25 @@ def reindex(_args: argparse.Namespace) -> int:
     return 0
 
 
+def voices(_args: argparse.Namespace) -> int:
+    """Lista las voces de la cuenta de ElevenLabs para elegir ELEVENLABS_VOICE_ID."""
+    from app.integrations import registry
+    from app.integrations.ai.base import AIError
+
+    speech = registry.get_speech()
+    if speech.name != "elevenlabs":
+        sys.stderr.write("Requiere VOICE_PROVIDER=elevenlabs y ELEVENLABS_API_KEY.\n")
+        return 2
+    try:
+        available = speech.list_voices()
+    except AIError as exc:
+        sys.stderr.write(f"No se pudieron listar las voces: {exc}\n")
+        return 1
+    for voice_id, name in available:
+        sys.stdout.write(f"{voice_id}  {name}\n")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app.cli", description="Administración de Silver Minds")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -162,6 +181,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     check = commands.add_parser("check-ai", help="Comprueba el proveedor de IA configurado")
     check.set_defaults(handler=check_ai)
+
+    voices_parser = commands.add_parser("voices", help="Voces disponibles en ElevenLabs")
+    voices_parser.set_defaults(handler=voices)
 
     reindex_parser = commands.add_parser("reindex", help="Regenera los embeddings del índice")
     reindex_parser.set_defaults(handler=reindex)

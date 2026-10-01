@@ -107,6 +107,7 @@ Los correos simulados quedan en `var/outbox/`.
 | `uv run python -m app.cli eval-safety` | 52 escenarios sintéticos con señales simuladas |
 | `uv run python -m app.cli eval-safety --live` | Los mismos escenarios contra el proveedor real |
 | `uv run python -m app.cli check-ai` | Una llamada mínima por capacidad al proveedor de IA |
+| `uv run python -m app.cli voices` | Voces disponibles en la cuenta de ElevenLabs |
 | `uv run python -m app.cli reindex` | Regenera los embeddings con el proveedor configurado |
 | `uv run python -m app.cli dev-token` | JWT local para probar la API como cuenta |
 
@@ -136,10 +137,31 @@ Cada integración se activa con variables de entorno; ver [.env.example](.env.ex
 |---|---|---|
 | OpenAI (Responses, embeddings, moderación, voz) | `AI_PROVIDER=openai` | Implementada, **sin ejecutar contra la API real** |
 | Resend | `EMAIL_PROVIDER=resend` | Implementada, **sin ejecutar contra la API real** |
+| ElevenLabs (voz del dispositivo y transcripción) | `VOICE_PROVIDER=elevenlabs` | Implementada, **sin ejecutar contra la API real** |
 | Supabase Storage | `STORAGE_PROVIDER=supabase` | Implementada, **sin ejecutar contra un proyecto real** |
 | Supabase Auth | `SUPABASE_JWKS_URL` | Verificación probada con claves ES256 locales |
 
 `GET /api/v1/health/ready` indica qué adaptadores están activos.
+
+### Conectar ElevenLabs para la voz
+
+1. Agrega tu clave a `.env` (nunca al repositorio ni a un chat): `ELEVENLABS_API_KEY=...`
+2. En el mismo archivo cambia `VOICE_PROVIDER=ai` por `VOICE_PROVIDER=elevenlabs`.
+3. Elige una voz (opcional; sin esto se usa la primera de tu cuenta) y cópiala en
+   `ELEVENLABS_VOICE_ID`:
+
+```bash
+uv run python -m app.cli voices
+```
+
+4. Comprueba la voz y reinicia la API y el worker:
+
+```bash
+uv run python -m app.cli check-ai
+```
+
+El dispositivo habla con esa voz y vuelve a la del navegador si el proveedor falla o si
+se supera `VOICE_DAILY_CHARS`.
 
 ### Conectar OpenAI
 

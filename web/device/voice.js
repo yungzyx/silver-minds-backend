@@ -1,4 +1,6 @@
 // Voz del dispositivo: reconocimiento continuo para oír su nombre y síntesis para hablar.
+// Habla con la voz del servidor (ElevenLabs u OpenAI) cuando está configurada y, si no,
+// con la del navegador.
 //
 // Usa la Web Speech API del navegador. En Chrome el reconocimiento envía el audio a un
 // servicio del proveedor del navegador: en un dispositivo real se reemplaza por un
@@ -7,7 +9,7 @@
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const RESTART_DELAY_MS = 400;
 
-export function createVoice({ language, onFinal, onInterim, onStatus }) {
+export function createVoice({ language, onFinal, onInterim, onStatus, fetchSpeech }) {
   let recognition = null;
   let wanted = false; // el dispositivo está encendido y debe escuchar
   let paused = false; // en pausa mientras el dispositivo habla, para no oírse a sí mismo
@@ -56,6 +58,58 @@ export function createVoice({ language, onFinal, onInterim, onStatus }) {
     );
   }
 
+  let playing = null; // audio del servidor en reproducción
+
+  function stopSpeaking() {
+    window.speechSynthesis?.cancel();
+    if (playing) {
+      playing.pause();
+      playing.dispatchEvent(new Event("ended"));
+    }
+  }
+
+  /** Reproduce la voz del servidor. Devuelve false si no hay o si falla. */
+  async function speakWithServer(text) {
+    if (!fetchSpeech) return false;
+    let url;
+    try {
+      url = URL.createObjectURL(await fetchSpeech(text));
+    } catch {
+      return false; // sin proveedor, sin créditos o sin conexión: habla el navegador
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        playing = new Audio(url);
+        playing.onended = resolve;
+        playing.onerror = reject;
+        playing.play().catch(reject);
+      });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      playing = null;
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function speakWithBrowser(text) {
+    return new Promise((resolve) => {
+      if (!window.speechSynthesis) {
+        resolve(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language;
+      utterance.rate = 0.95;
+      const voice = pickVoice();
+      if (voice) utterance.voice = voice;
+      utterance.onend = () => resolve(true);
+      utterance.onerror = () => resolve(false);
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
   return {
     supported: Boolean(recognition),
 
@@ -68,34 +122,19 @@ export function createVoice({ language, onFinal, onInterim, onStatus }) {
       start();
     },
 
-    /** Dice el texto en voz alta. La promesa se cumple al terminar (o si no hay voz). */
-    speak(text) {
-      return new Promise((resolve) => {
-        if (!window.speechSynthesis || !text) {
-          resolve();
-          return;
-        }
-        paused = true;
-        recognition?.abort();
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language;
-        utterance.rate = 0.95;
-        const voice = pickVoice();
-        if (voice) utterance.voice = voice;
-        const finish = () => {
-          paused = false;
-          start();
-          resolve();
-        };
-        utterance.onend = finish;
-        utterance.onerror = finish;
-        window.speechSynthesis.speak(utterance);
-      });
+    /** Dice el texto en voz alta. La promesa se cumple al terminar (o si no hay voz).
+     *  Usa la voz del servidor cuando existe; si falla, la del navegador. */
+    async speak(text) {
+      if (!text) return;
+      paused = true;
+      recognition?.abort();
+      stopSpeaking();
+      const spoken = (await speakWithServer(text)) || (await speakWithBrowser(text));
+      paused = false;
+      start();
+      return spoken;
     },
 
-    silence() {
-      window.speechSynthesis?.cancel();
-    },
+    silence: stopSpeaking,
   };
 }
