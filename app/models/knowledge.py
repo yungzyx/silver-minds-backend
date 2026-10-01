@@ -120,6 +120,8 @@ class IndexState(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
     version: Mapped[int] = mapped_column(Integer, default=0)
+    # Modelo que generó los embeddings. Vectores de modelos distintos no son comparables.
+    embedding_model: Mapped[str | None] = mapped_column(String(80))
     published_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

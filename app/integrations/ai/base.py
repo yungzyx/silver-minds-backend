@@ -105,6 +105,7 @@ class AgentRequest:
 class AIProvider(Protocol):
     name: str
     classifier_version: str
+    embedding_model: str
     speech_content_type: str
 
     def embed(self, texts: list[str]) -> list[list[float]]: ...

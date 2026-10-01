@@ -80,6 +80,7 @@ def _stem(word: str) -> str:
 class FakeAIProvider:
     name = "fake"
     classifier_version = "fake:heuristic-v1"
+    embedding_model = "fake:hash-v1"
     speech_content_type = "audio/wav"
 
     def __init__(self) -> None:

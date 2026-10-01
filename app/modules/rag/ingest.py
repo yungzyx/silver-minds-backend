@@ -189,5 +189,7 @@ def _publish(db: Session, *, bump: bool) -> int:
         db.add(state)
     if bump:
         state.version += 1
+    if state.embedding_model is None:
+        state.embedding_model = registry.get_ai().embedding_model
     db.flush()
     return state.version

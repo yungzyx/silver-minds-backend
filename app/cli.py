@@ -109,6 +109,34 @@ def eval_safety(args: argparse.Namespace) -> int:
     return 0 if not report.false_negatives and report.all_urgent_detected else 1
 
 
+def check_ai(_args: argparse.Namespace) -> int:
+    """Una llamada mínima por capacidad al proveedor de IA configurado."""
+    from app.integrations import registry
+    from app.integrations.ai.check import run_checks
+
+    sys.stdout.write(f"Proveedor: {registry.get_ai().name}\n")
+    results = run_checks()
+    for result in results:
+        sys.stdout.write(
+            f"  {'OK   ' if result.ok else 'FALLA'} {result.capability}: {result.detail}\n"
+        )
+    return 0 if all(result.ok for result in results) else 1
+
+
+def reindex(_args: argparse.Namespace) -> int:
+    """Regenera todos los embeddings con el proveedor configurado."""
+    from app.modules.rag.reindex import reindex_all
+
+    with session_scope() as db:
+        report = reindex_all(db)
+    sys.stdout.write(
+        f"Reindexado con {report.embedding_model}: {report.chunks} fragmentos, "
+        f"{report.activities} actividades, {report.memories} memorias. "
+        f"Versión del índice: {report.index_version}\n"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app.cli", description="Administración de Silver Minds")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -131,6 +159,12 @@ def build_parser() -> argparse.ArgumentParser:
     safety = commands.add_parser("eval-safety", help="Escenarios sintéticos de seguridad")
     safety.add_argument("--live", action="store_true", help="Usa el proveedor real")
     safety.set_defaults(handler=eval_safety)
+
+    check = commands.add_parser("check-ai", help="Comprueba el proveedor de IA configurado")
+    check.set_defaults(handler=check_ai)
+
+    reindex_parser = commands.add_parser("reindex", help="Regenera los embeddings del índice")
+    reindex_parser.set_defaults(handler=reindex)
 
     ingest_parser = commands.add_parser("ingest", help="Ingesta de conocimiento revisado")
     ingest_parser.add_argument("manifest", help="Ruta al manifiesto YAML")
