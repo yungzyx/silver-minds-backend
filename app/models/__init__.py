@@ -12,6 +12,7 @@ from app.models.actions import (
     SupportRequest,
 )
 from app.models.base import Base
+from app.models.devices import Device, DeviceEvent, FamilyAccess
 from app.models.identity import AuditEvent, Preference, Profile
 from app.models.knowledge import (
     Activity,
@@ -38,6 +39,9 @@ __all__ = [
     "ConfirmedMemory",
     "Contact",
     "Conversation",
+    "Device",
+    "DeviceEvent",
+    "FamilyAccess",
     "IndexState",
     "Invitation",
     "Job",

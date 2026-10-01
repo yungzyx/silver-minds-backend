@@ -55,6 +55,21 @@ def ingest(args: argparse.Namespace) -> int:
     return 1 if report.errors else 0
 
 
+def demo_setup(args: argparse.Namespace) -> int:
+    """Prepara la demostración: persona ficticia, dispositivo y acceso familiar."""
+    from app.modules.devices.demo import setup_demo
+
+    with session_scope() as db:
+        links = setup_demo(db, device_name=args.device_name)
+    sys.stdout.write(
+        "Demostración lista (datos ficticios).\n\n"
+        f"Dispositivo de Rosa:\n  {links.device_url}\n\n"
+        f"Panel familiar de Camila:\n  {links.family_url}\n\n"
+        "Los enlaces contienen tokens: no los compartas fuera de la demostración.\n"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app.cli", description="Administración de Silver Minds")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -64,6 +79,12 @@ def build_parser() -> argparse.ArgumentParser:
     token.add_argument("--sub", help="UUID de la persona usuaria")
     token.add_argument("--hours", type=int, default=12)
     token.set_defaults(handler=dev_token)
+
+    demo = commands.add_parser("demo-setup", help="Datos ficticios y enlaces de la demostración")
+    demo.add_argument(
+        "--device-name", default="Silvia", help="Nombre con que se llama al dispositivo"
+    )
+    demo.set_defaults(handler=demo_setup)
 
     ingest_parser = commands.add_parser("ingest", help="Ingesta de conocimiento revisado")
     ingest_parser.add_argument("manifest", help="Ruta al manifiesto YAML")

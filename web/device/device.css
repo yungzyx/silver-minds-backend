@@ -1,0 +1,638 @@
+/* Dispositivo simulado: un objeto de sobremesa con pantalla, botón físico y luz de cámara. */
+
+.stage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2) var(--space-4);
+}
+
+.stage-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+/* --- Carcasa ------------------------------------------------------------------- */
+
+.device {
+  --shell: oklch(86% 0.045 70);
+  --shell-edge: oklch(76% 0.055 65);
+  align-self: center;
+  width: min(1080px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 148px;
+  gap: var(--space-2);
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--shell), var(--shell-edge));
+  box-shadow: var(--shadow-device);
+  transform: perspective(1800px) rotateX(2deg);
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  min-height: 440px;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: var(--space-3);
+  color: var(--color-cream);
+  background:
+    radial-gradient(90% 70% at 50% 38%, oklch(34% 0.06 310), transparent 70%),
+    var(--color-night);
+  box-shadow: 0 0 0 6px oklch(18% 0.03 300), inset 0 0 60px oklch(10% 0.03 300 / 0.7);
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  justify-items: center;
+  align-items: center;
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.device[data-mode]:not([data-mode="normal"]) .screen {
+  background:
+    radial-gradient(90% 70% at 50% 30%, oklch(38% 0.05 250), transparent 70%),
+    oklch(22% 0.035 255);
+}
+
+.device[data-state="off"] .screen > :not(.power) {
+  visibility: hidden;
+}
+
+/* --- Barra de estado ----------------------------------------------------------- */
+
+.status-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 2rem;
+}
+
+.clock {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  opacity: 0.75;
+}
+
+.camera-indicator {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-night);
+  background: var(--color-cream);
+}
+
+.live-dot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--color-live);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* --- Personaje ----------------------------------------------------------------- */
+
+.character {
+  width: clamp(150px, 28%, 250px);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.character svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.face {
+  filter: drop-shadow(0 10px 30px oklch(70% 0.17 40 / 0.45));
+  transform-origin: 120px 120px;
+  animation: breathe 5s ease-in-out infinite;
+}
+
+.halo {
+  fill: none;
+  stroke: var(--color-amber);
+  stroke-width: 2;
+  opacity: 0;
+  transform-origin: 120px 120px;
+}
+
+.eyes-open ellipse {
+  fill: var(--color-night);
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: blink 5.5s infinite;
+}
+
+.eyes-closed path,
+.mouth-smile,
+.mouth-soft {
+  fill: none;
+  stroke: var(--color-night);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.mouth-open {
+  fill: var(--color-night);
+  transform-origin: 120px 148px;
+}
+
+.eyes-closed,
+.mouth-open,
+.mouth-soft {
+  opacity: 0;
+}
+
+/* Reposo: ojos cerrados y respiración lenta. */
+.device[data-state="idle"] .eyes-open {
+  opacity: 0;
+}
+.device[data-state="idle"] .eyes-closed,
+.device[data-state="idle"] .mouth-soft {
+  opacity: 1;
+}
+.device[data-state="idle"] .mouth-smile {
+  opacity: 0;
+}
+.device[data-state="idle"] .character {
+  transform: scale(0.9);
+}
+
+/* Escuchando: ondas que se abren. */
+.device[data-state="listening"] .halo {
+  stroke: var(--color-teal);
+  animation: ripple 1.8s var(--ease-out) infinite;
+}
+.device[data-state="listening"] .halo-inner {
+  animation-delay: 0.5s;
+}
+.device[data-state="listening"] .character {
+  transform: scale(1.06);
+}
+
+/* Pensando: mirada hacia arriba. */
+.device[data-state="thinking"] .eyes-open {
+  transform: translateY(-7px);
+}
+.device[data-state="thinking"] .mouth-smile {
+  opacity: 0;
+}
+.device[data-state="thinking"] .mouth-soft {
+  opacity: 1;
+}
+
+/* Hablando: la boca se mueve. */
+.device[data-state="speaking"] .mouth-smile {
+  opacity: 0;
+}
+.device[data-state="speaking"] .mouth-open {
+  opacity: 1;
+  animation: talk 0.42s ease-in-out infinite alternate;
+}
+
+/* En modo de apoyo el personaje se aquieta. */
+.device[data-mode]:not([data-mode="normal"]) .face {
+  filter: drop-shadow(0 10px 30px oklch(78% 0.07 250 / 0.4)) saturate(0.7);
+}
+
+/* Con una tarjeta o la ayuda en pantalla, el personaje se aparta hacia arriba. */
+.screen:has(.card:not([hidden])) .character {
+  transform: translateY(-62%) scale(0.5);
+}
+
+/* --- Texto --------------------------------------------------------------------- */
+
+.caption {
+  margin: 0;
+  max-width: 34ch;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.device[data-state="idle"] .caption {
+  font-size: var(--text-hero);
+  letter-spacing: -0.02em;
+}
+
+.hint {
+  margin: var(--space-1) 0 0;
+  min-height: 1.6em;
+  font-size: var(--text-lg);
+  color: oklch(95% 0.03 85 / 0.7);
+  text-align: center;
+}
+
+/* --- Tarjetas de decisión ------------------------------------------------------ */
+
+.card,
+.support {
+  position: absolute;
+  inset: auto var(--space-3) var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-soft);
+  animation: rise var(--duration-normal) var(--ease-out);
+}
+
+.card-kicker {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-clay-deep);
+}
+
+.card-title {
+  margin: 0.25rem 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.card-body {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+  white-space: pre-line;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.choice {
+  flex: 1 1 12rem;
+  min-height: 4rem;
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    filter var(--duration-fast);
+}
+
+.choice:hover {
+  filter: brightness(1.06);
+}
+.choice:active {
+  transform: scale(0.97);
+}
+
+.choice-yes {
+  color: var(--color-cream);
+  background: var(--color-clay-deep);
+}
+.choice-no {
+  color: var(--color-ink);
+  background: var(--color-paper-deep);
+}
+.choice-quiet {
+  width: 100%;
+  margin-top: var(--space-2);
+  color: var(--color-ink);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-ink-soft);
+}
+
+/* --- Apoyo --------------------------------------------------------------------- */
+
+.device[data-mode]:not([data-mode="normal"]) .character {
+  width: clamp(90px, 13%, 130px);
+}
+.device[data-mode]:not([data-mode="normal"]) .caption {
+  font-size: var(--text-lg);
+  max-width: 52ch;
+}
+
+.resources {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2);
+}
+
+.resource {
+  display: grid;
+  gap: 0.15rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--color-ink);
+  background: var(--color-paper-deep);
+}
+
+.resource-phone {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-clay-deep);
+}
+
+.resource-name {
+  font-weight: 700;
+}
+
+.support-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.support-draft {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.support-draft textarea {
+  width: 100%;
+  padding: var(--space-2);
+  border: 2px solid var(--color-ink-soft);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-lg);
+  background: oklch(99% 0.01 85);
+}
+
+/* --- Encendido y vista previa -------------------------------------------------- */
+
+.power {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: oklch(95% 0.03 85 / 0.7);
+  background: transparent;
+  cursor: pointer;
+}
+
+.device:not([data-state="off"]) .power {
+  display: none;
+}
+
+.preview {
+  position: absolute;
+  top: 4.2rem;
+  right: var(--space-3);
+  width: 132px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 3px solid var(--color-cream);
+  transform: scaleX(-1);
+}
+
+/* --- Controles físicos --------------------------------------------------------- */
+
+.controls {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.call-button {
+  width: 124px;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-cream);
+  background: radial-gradient(circle at 34% 28%, oklch(70% 0.15 42), var(--color-clay-deep) 70%);
+  box-shadow:
+    0 10px 0 oklch(36% 0.11 32),
+    0 18px 26px oklch(24% 0.05 40 / 0.35);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.call-button:active:not(:disabled) {
+  transform: translateY(8px);
+  box-shadow:
+    0 2px 0 oklch(36% 0.11 32),
+    0 6px 10px oklch(24% 0.05 40 / 0.35);
+}
+
+.call-button:disabled {
+  cursor: default;
+  filter: saturate(0.4);
+}
+
+.call-label {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.camera-switch {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.camera-switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.switch-track {
+  width: 64px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 999px;
+  background: oklch(62% 0.03 60);
+  box-shadow: inset 0 2px 5px oklch(24% 0.03 300 / 0.35);
+  transition: background-color var(--duration-normal);
+}
+
+.switch-thumb {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-cream);
+  box-shadow: 0 2px 4px oklch(24% 0.03 300 / 0.4);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.camera-switch input:checked + .switch-track {
+  background: var(--color-live);
+}
+.camera-switch input:checked + .switch-track .switch-thumb {
+  transform: translateX(30px);
+}
+.camera-switch input:focus-visible + .switch-track {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 3px;
+}
+
+/* Luz física: encendida siempre que la cámara está compartida. */
+.led {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: oklch(45% 0.03 60);
+  box-shadow: inset 0 1px 2px oklch(0% 0 0 / 0.4);
+}
+
+.device[data-camera="on"] .led {
+  background: var(--color-live);
+  box-shadow: 0 0 14px 3px oklch(62% 0.22 25 / 0.7);
+}
+
+/* --- Simulador ----------------------------------------------------------------- */
+
+.simulator {
+  width: min(1080px, 100%);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.say-form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.say-row {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.say-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.8rem 1.1rem;
+  border: 2px solid var(--color-paper-deep);
+  border-radius: 999px;
+  background: oklch(99% 0.01 85);
+}
+
+.say-row button {
+  padding: 0.8rem 1.6rem;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-cream);
+  background: var(--color-ink);
+  cursor: pointer;
+}
+
+.mic-status {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+
+/* --- Movimiento ---------------------------------------------------------------- */
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.035);
+  }
+}
+@keyframes blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes ripple {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+@keyframes talk {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1.15);
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+/* --- Pantallas angostas -------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .device {
+    grid-template-columns: 1fr;
+    transform: none;
+    padding: 14px;
+  }
+  .screen {
+    aspect-ratio: auto;
+    min-height: 520px;
+    padding: var(--space-2);
+  }
+  .controls {
+    grid-template-rows: none;
+    grid-template-columns: auto 1fr auto;
+    padding: 0 var(--space-1) var(--space-1);
+  }
+  .call-button {
+    width: 96px;
+  }
+  .card,
+  .support {
+    inset: auto var(--space-2) var(--space-2);
+    padding: var(--space-2);
+  }
+  .preview {
+    width: 96px;
+  }
+}

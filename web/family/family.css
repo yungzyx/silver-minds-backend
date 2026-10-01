@@ -1,0 +1,366 @@
+/* Panel familiar: composición editorial sobre papel. La imagen en vivo manda;
+   los números se leen como cifras de una crónica, no como tarjetas de un tablero. */
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) clamp(1rem, 4vw, 4rem);
+  border-bottom: 1px solid oklch(24% 0.03 300 / 0.18);
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.brand span {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-ink-soft);
+}
+
+.viewer {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  grid-template-areas:
+    "intro intro"
+    "live today"
+    "timeline week"
+    "note note";
+  column-gap: clamp(1.5rem, 4vw, 4.5rem);
+  row-gap: var(--space-4);
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--space-4) clamp(1rem, 4vw, 4rem) var(--space-5);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-clay-deep);
+}
+
+.fineprint {
+  margin: var(--space-1) 0 0;
+  max-width: 58ch;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+
+/* --- Encabezado ---------------------------------------------------------------- */
+
+.intro {
+  grid-area: intro;
+}
+
+.person {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 2rem + 8vw, 8.5rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-lg);
+}
+
+.dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: oklch(70% 0.02 60);
+}
+
+.dot[data-online="true"] {
+  background: var(--color-ok);
+  box-shadow: 0 0 0 5px oklch(62% 0.13 150 / 0.18);
+}
+
+.dot-live {
+  background: var(--color-live);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.separator {
+  color: var(--color-ink-soft);
+}
+
+/* --- Imagen en vivo ------------------------------------------------------------ */
+
+.live {
+  grid-area: live;
+}
+
+.frame {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(80% 70% at 50% 40%, oklch(34% 0.06 310), transparent 70%),
+    var(--color-night);
+  box-shadow: var(--shadow-soft);
+  /* Leve giro: la imagen se siente apoyada sobre la página, no encajada en una grilla. */
+  transform: rotate(-0.6deg);
+}
+
+.frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.live-message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: var(--space-4);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.25;
+  color: var(--color-cream);
+  text-wrap: balance;
+}
+
+.frame[data-live="true"] .live-message {
+  display: none;
+}
+
+.live-badge {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-cream);
+}
+
+.frame[data-live="true"] .live-badge {
+  display: inline-flex;
+}
+
+/* --- Hoy ----------------------------------------------------------------------- */
+
+.today {
+  grid-area: today;
+  align-self: end;
+}
+
+.hero-figure {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+.hero-number {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 3rem + 9vw, 10rem);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: var(--color-clay-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-label {
+  max-width: 12ch;
+  padding-bottom: 0.4rem;
+  font-size: var(--text-lg);
+  line-height: 1.2;
+}
+
+.facts {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid oklch(24% 0.03 300 / 0.18);
+}
+
+.facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0.7rem 0;
+  border-bottom: 1px solid oklch(24% 0.03 300 / 0.18);
+}
+
+.facts dt {
+  color: var(--color-ink-soft);
+}
+
+.facts dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Semana -------------------------------------------------------------------- */
+
+.week {
+  grid-area: week;
+}
+
+.chart {
+  margin: 0 0 var(--space-3);
+}
+
+.chart svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart .bar {
+  fill: var(--color-ink);
+  transform-origin: bottom;
+  transform-box: fill-box;
+  animation: grow var(--duration-normal) var(--ease-out) backwards;
+}
+
+.chart .bar-today {
+  fill: var(--color-clay);
+}
+
+.chart .bar-empty {
+  fill: oklch(24% 0.03 300 / 0.15);
+}
+
+.chart text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  fill: var(--color-ink-soft);
+  text-anchor: middle;
+}
+
+.chart .value {
+  font-weight: 700;
+  fill: var(--color-ink);
+}
+
+.chart .baseline {
+  stroke: oklch(24% 0.03 300 / 0.3);
+}
+
+/* --- Línea de tiempo ----------------------------------------------------------- */
+
+.timeline {
+  grid-area: timeline;
+}
+
+.timeline-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-list li {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: var(--space-2);
+  padding: 0.65rem 0;
+  border-bottom: 1px dashed oklch(24% 0.03 300 / 0.2);
+}
+
+.timeline-list time {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-list .highlight {
+  font-weight: 700;
+  color: var(--color-clay-deep);
+}
+
+.timeline-empty {
+  color: var(--color-ink-soft);
+}
+
+/* --- Pie y acceso -------------------------------------------------------------- */
+
+.note {
+  grid-area: note;
+  padding-top: var(--space-3);
+  border-top: 1px solid oklch(24% 0.03 300 / 0.18);
+}
+
+.note p {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--color-ink-soft);
+}
+
+.gate {
+  margin: 20vh auto 0;
+  max-width: 32ch;
+  padding: 0 var(--space-2);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.25;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .panel {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "intro"
+      "live"
+      "today"
+      "week"
+      "timeline"
+      "note";
+  }
+  .frame {
+    transform: none;
+  }
+}

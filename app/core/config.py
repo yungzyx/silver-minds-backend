@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     local_outbox_dir: str = "var/outbox"
 
     public_link_base_url: str = "http://localhost:8000/api/v1"
+    public_app_base_url: str = "http://localhost:8000"
     default_country: str = "CL"
 
     daily_message_quota: int = 200
