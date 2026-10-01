@@ -73,6 +73,16 @@ docker compose up --build
 Levanta PostgreSQL con pgvector, aplica las migraciones e inicia la API y el worker.
 **No se verificó en la máquina de desarrollo**, que no tiene Docker instalado.
 
+## Abrirlo con un solo comando
+
+```bash
+./scripts/start-demo.sh
+```
+
+Comprueba PostgreSQL, aplica las migraciones, inicia la API y el worker, prepara los
+datos ficticios y abre en Google Chrome el dispositivo y el panel familiar. Los enlaces
+quedan en `var/demo-links.txt` y se conservan entre ejecuciones. `Ctrl+C` detiene todo.
+
 ## Demostración
 
 Prepara datos ficticios (Rosa, su hija Camila, un dispositivo y un acceso familiar):
