@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+
+# Datos locales: nunca versionar audios, conversaciones ni correos simulados
+var/
+*.wav
+*.mp3
+*.m4a
+*.webm
+*.ogg
+
+# Sistema
+.DS_Store
