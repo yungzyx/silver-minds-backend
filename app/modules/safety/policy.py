@@ -58,6 +58,7 @@ class SafetyPolicy(_Strict):
     output_fallback: str
     generation_fallback: str
     output_forbidden: tuple[str, ...]
+    memory_forbidden: tuple[str, ...]
 
 
 class SupportResource(_Strict):

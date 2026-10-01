@@ -123,3 +123,11 @@ output_forbidden:
   - '\bsoy (tu )?(terapeuta|psicolog[oa]|psiquiatra|medic[oa]|doctor[a]?)\b'
   - '\bte diagnostico\b'
   - '\b(tienes|sufres de|padeces) (depresion|demencia|alzheimer|ansiedad cronica)\b'
+
+# Una memoria candidata con estos términos se descarta: un estado de ánimo, un problema
+# de salud, una crisis o una conclusión sobre la persona nunca se guardan como preferencia.
+memory_forbidden:
+  - '\b(depresion|deprimid[oa]|ansiedad|angustia|demencia|alzheimer|diagnostic\w*|enfermedad\w*|medicament\w*|pastillas|tratamiento)\b'
+  - '\b(suicid\w*|morir\w*|muerte|matar\w*|hacerse daño|quitarse la vida)\b'
+  - '\b(es|siente que es|se siente) una carga\b'
+  - '\b(triste|tristeza|llora|llanto|desesperad[oa]|sin ganas de vivir|crisis)\b'
