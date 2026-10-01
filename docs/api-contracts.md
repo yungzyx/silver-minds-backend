@@ -4,9 +4,13 @@ Versión 1 · Prefijo `/api/v1` · El contrato ejecutable es OpenAPI en `/docs` 
 
 ## Convenciones
 
-- **Autenticación:** `Authorization: Bearer <JWT de Supabase Auth>`. El `sub` identifica
-  al propietario. Los endpoints marcados como *públicos* se autorizan con un token de un
-  solo propósito incluido en el enlace del correo.
+- **Autenticación:** tres credenciales en la cabecera `Authorization`:
+  - `Bearer <JWT de Supabase Auth>`: la cuenta de la persona mayor. Alcance completo.
+  - `Device <token>`: su dispositivo en casa. Vale en todo lo marcado *cuenta o
+    dispositivo* (por defecto), no en lo marcado *solo cuenta*.
+  - `Viewer <token>`: un contacto con acceso al panel. Solo `/family/*`.
+- Los endpoints marcados como *públicos* se autorizan con un token de un solo propósito
+  incluido en el enlace del correo.
 - **Listas:** `{"items": [...], "total": n}`.
 - **Errores:** `{"error": {"code": "…", "message": "…"}}`.
 - Un recurso de otro usuario responde `404`, igual que uno inexistente.
@@ -154,3 +158,37 @@ más `transcript` y `reply_audio_available`.
 
 Una solicitud de apoyo comparte **únicamente** el texto aprobado. No adjunta
 conversación, historial ni clasificación interna.
+
+## Dispositivo
+
+| Método y ruta | Descripción |
+|---|---|
+| `POST /devices` | *Solo cuenta.* `{name}` → dispositivo y su token, que se muestra una vez |
+| `GET /devices` | *Solo cuenta.* Lista |
+| `POST /devices/{id}/revoke` | *Solo cuenta.* Revoca y corta la transmisión |
+| `GET /device/session` | *Dispositivo.* Nombre, cámara, quién mira, modo y pendientes. Sirve de latido |
+| `POST /device/events` | *Dispositivo.* `{kind: wake_button \| wake_name \| presence, value?}`. La presencia solo se acepta con la cámara encendida |
+| `WS /device/stream` | *Dispositivo.* Primer mensaje `{type: "auth", token}`. Luego `{type: "camera", enabled}` y cuadros JPEG |
+
+## Panel familiar
+
+| Método y ruta | Descripción |
+|---|---|
+| `POST /family-access` | *Solo cuenta.* `{contact_id, can_view_camera}`. El contacto debe estar aceptado; recibe un enlace personal |
+| `GET /family-access` | *Solo cuenta.* Lista |
+| `PATCH /family-access/{id}` | *Solo cuenta.* `{can_view_camera}` |
+| `POST /family-access/{id}/revoke` | *Solo cuenta.* Quita el acceso y corta la transmisión en curso |
+| `GET /family/overview` | *Acceso familiar.* Señales de actividad |
+| `WS /family/stream` | *Acceso familiar con permiso de cámara.* Recibe estado y cuadros mientras la cámara está encendida |
+
+`GET /family/overview` devuelve `device`, `camera`, `today`, `week`, `series` (siete días)
+y `timeline`. No incluye conversaciones, memorias ni el estado de seguridad.
+
+Códigos de cierre de WebSocket: `4401` credencial inválida, `4403` sin permiso o revocado.
+
+## Páginas
+
+| Ruta | Descripción |
+|---|---|
+| `/device/` | Dispositivo simulado. Lee el token de `#token=` |
+| `/family/` | Panel familiar. Lee el token de `#token=` |
