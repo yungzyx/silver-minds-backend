@@ -64,6 +64,7 @@ Sigue pendiente: registrar en la auditoría cuándo actúa el dispositivo y no l
 |---|---|---|
 | OpenAI Responses, embeddings, moderación, transcripción y voz | Adaptador probado con un cliente sustituto | Ejecutarlo con una clave real |
 | Clasificador contextual de seguridad | Prompt versionado y esquema estricto | Evaluarlo en vivo: `eval-safety --live` |
+| ElevenLabs (voz) | Adaptador probado con transporte simulado; el dispositivo ya lo usa si está configurado | Ejecutarlo con una clave real |
 | Resend | Adaptador probado con transporte simulado | Clave y dominio verificado |
 | Supabase Auth | Verificación ES256 mediante JWKS probada con claves locales | Proyecto real |
 | Supabase Storage | Adaptador probado con transporte simulado | Proyecto y bucket |

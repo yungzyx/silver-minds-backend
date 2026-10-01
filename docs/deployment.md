@@ -14,6 +14,7 @@
 | Worker | Render, background worker Docker | Sin plan gratuito |
 | Correo | Resend | Dominio remitente verificado |
 | IA | OpenAI | Modelos configurables por entorno |
+| Voz (opcional) | ElevenLabs | `eleven_flash_v2_5` para hablar y `scribe_v2` para transcribir, según la documentación del 1 de octubre de 2026 |
 
 ## Pasos pendientes
 

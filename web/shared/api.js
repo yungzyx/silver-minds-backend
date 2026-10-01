@@ -53,7 +53,18 @@ export function createClient(scheme, token) {
     }
     return payload;
   }
+  /** POST que devuelve un archivo (por ejemplo, audio). */
+  async function postForBlob(path, body) {
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { Authorization: `${scheme} ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new ApiError(response.status, "error", "Error");
+    return response.blob();
+  }
   return {
+    postForBlob,
     get: (path) => request("GET", path),
     post: (path, body = {}) => request("POST", path, body),
     patch: (path, body) => request("PATCH", path, body),

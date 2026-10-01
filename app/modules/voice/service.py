@@ -115,14 +115,16 @@ def process_audio(payload: dict) -> dict:
         path, speak_reply = audio.storage_path, audio.speak_reply
         language = db.get(Profile, owner_id).language
 
-    ai, storage = registry.get_ai(), registry.get_storage()
+    speech, storage = registry.get_speech(), registry.get_storage()
     try:
         data = storage.get(path)
     except StorageError:
         _fail(audio_id)
         return {"outcome": "failed", "error": "audio_not_found"}
     try:
-        transcript = ai.transcribe(audio=data, filename=path.rsplit("/", 1)[-1], language=language)
+        transcript = speech.transcribe(
+            audio=data, filename=path.rsplit("/", 1)[-1], language=language
+        )
     except AIError as exc:
         _fail(audio_id)
         raise RetryLaterError("transcription_unavailable") from exc
@@ -147,7 +149,7 @@ def process_audio(payload: dict) -> dict:
     if speak_reply:
         try:
             reply_path = f"{owner_id}/{audio_id}.reply"
-            storage.put(reply_path, ai.synthesize(reply.reply), ai.speech_content_type)
+            storage.put(reply_path, speech.synthesize(reply.reply), speech.speech_content_type)
         except (AIError, StorageError):
             # Si falla la síntesis se conserva el texto.
             logger.warning("La síntesis de voz falló; se entrega solo el texto")
@@ -159,7 +161,7 @@ def process_audio(payload: dict) -> dict:
         if audio is not None:
             audio.status = "done"
             audio.reply_audio_path = reply_path
-            audio.reply_content_type = ai.speech_content_type if reply_path else None
+            audio.reply_content_type = speech.speech_content_type if reply_path else None
     return {
         "outcome": "done",
         "transcript": transcript,

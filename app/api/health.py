@@ -24,6 +24,7 @@ class Readiness(BaseModel):
     database: bool
     pgvector: bool
     ai_provider: str
+    voice_provider: str
     email_provider: str
     storage_provider: str
 
@@ -62,6 +63,7 @@ def ready(
         database=database,
         pgvector=pgvector,
         ai_provider=settings.ai_provider,
+        voice_provider=settings.voice_provider,
         email_provider=settings.email_provider,
         storage_provider=settings.storage_provider,
     )

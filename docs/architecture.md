@@ -258,8 +258,10 @@ actividades aprobadas y realizadas, invitaciones enviadas y aceptadas.
 
 ### Voz en el dispositivo simulado
 
-La página usa la Web Speech API del navegador para oír el nombre del dispositivo y para
-hablar. En Chrome ese reconocimiento envía el audio a un servicio del proveedor del
+La página usa la Web Speech API del navegador para oír el nombre del dispositivo. Para
+hablar pide el audio al servidor (`POST /device/speech`) cuando hay un proveedor de voz
+configurado, y usa la voz del navegador si no lo hay, si falla o si se agotó el límite
+diario de caracteres, que protege los créditos de la cuenta. En Chrome ese reconocimiento envía el audio a un servicio del proveedor del
 navegador. En un dispositivo real se reemplaza por un detector local de la palabra de
 activación y por el endpoint de audio del backend (sección 9), que ya existe.
 
@@ -276,3 +278,4 @@ activación y por el endpoint de audio del backend (sección 9), que ya existe.
 | Relevo de cuadros JPEG por WebSocket | Más simple y predecible que WebRTC para una demo; sin servidores STUN/TURN |
 | Token en el fragmento del enlace | No llega al servidor ni a sus registros |
 | Voz del navegador en el dispositivo simulado | Funciona sin credenciales; el endpoint de audio queda para el dispositivo real |
+| ElevenLabs como proveedor de voz opcional | **Cambio respecto del stack acordado** (OpenAI para voz y transcripción). Motivo: el equipo dispone de una clave de ElevenLabs y no de OpenAI. Se activa con `VOICE_PROVIDER=elevenlabs`; OpenAI sigue disponible con `VOICE_PROVIDER=ai` |

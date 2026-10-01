@@ -13,8 +13,16 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import utcnow
 from app.core.config import get_settings
-from app.core.errors import ConflictError, InvalidInputError, NotFoundError
+from app.core.errors import (
+    AppError,
+    ConflictError,
+    InvalidInputError,
+    NotFoundError,
+    QuotaExceededError,
+)
 from app.core.tokens import hash_token, new_token
+from app.integrations import registry
+from app.integrations.ai.base import AIError
 from app.integrations.email.base import EmailMessage
 from app.models import (
     Contact,
@@ -34,6 +42,11 @@ from app.worker.delivery import run_delivery
 FAMILY_ACCESS_TTL = timedelta(days=30)
 PRESENCE_MIN_INTERVAL = timedelta(seconds=10)
 DEFAULT_OWNER_NAME = "Una persona que usa Silver Minds"
+
+
+class VoiceUnavailableError(AppError):
+    status_code = 503
+    code = "voice_unavailable"
 
 
 # --- Dispositivos -------------------------------------------------------------------
@@ -106,7 +119,47 @@ def session_info(db: Session, device: Device, viewers: list[str]) -> DeviceSessi
         can_resume=safety.can_resume(db, device.owner_id),
         pending_proposals=drafts,
         pending_memory_candidates=candidates,
+        server_voice=has_server_voice(),
     )
+
+
+def has_server_voice() -> bool:
+    """El simulador devuelve silencio: con él, habla el navegador."""
+    return registry.get_speech().name != "fake"
+
+
+def synthesize_for_device(db: Session, device: Device, text: str) -> tuple[bytes, str]:
+    """Voz para lo que el dispositivo va a decir. Limitada para cuidar los créditos."""
+    settings = get_settings()
+    if not has_server_voice():
+        raise VoiceUnavailableError("La voz del servidor no está configurada.")
+    text = text.strip()[: settings.voice_max_chars]
+    since = utcnow() - timedelta(days=1)
+    spoken = db.execute(
+        select(func.coalesce(func.sum(DeviceEvent.value), 0)).where(
+            DeviceEvent.owner_id == device.owner_id,
+            DeviceEvent.kind == "speech",
+            DeviceEvent.created_at >= since,
+        )
+    ).scalar_one()
+    if spoken + len(text) > settings.voice_daily_chars:
+        raise QuotaExceededError("Se alcanzó el límite diario de voz.", code="voice_quota_exceeded")
+    speech = registry.get_speech()
+    try:
+        audio = speech.synthesize(text)
+    except AIError as exc:
+        raise VoiceUnavailableError("La voz del servidor no está disponible ahora.") from exc
+    # Solo se guarda cuántos caracteres se dijeron, no el texto.
+    db.add(
+        DeviceEvent(
+            owner_id=device.owner_id,
+            device_id=device.id,
+            kind="speech",
+            value=float(len(text)),
+            created_at=utcnow(),
+        )
+    )
+    return audio, speech.speech_content_type
 
 
 def record_event(db: Session, device: Device, data: DeviceEventIn) -> bool:
