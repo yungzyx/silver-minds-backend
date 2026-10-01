@@ -1,0 +1,54 @@
+# Desarrollo local: PostgreSQL con pgvector, migraciones, API y worker.
+# Sin credenciales externas todo funciona con adaptadores simulados.
+x-app: &app
+  build: .
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: postgresql+psycopg://silver:silver@db:5432/silver_minds
+  volumes:
+    - app_var:/app/var
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: silver
+      POSTGRES_PASSWORD: silver
+      POSTGRES_DB: silver_minds
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U silver -d silver_minds"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *app
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: python -m app.worker.main
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db_data:
+  app_var:
