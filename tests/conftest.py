@@ -75,3 +75,15 @@ def providers() -> Iterator[SimpleNamespace]:
     registry.override(ai=adapters.ai, email=adapters.email)
     yield adapters
     registry.clear_overrides()
+
+
+@pytest.fixture
+def knowledge() -> None:
+    """Corpus de demostración ingerido con embeddings simulados."""
+    from pathlib import Path
+
+    from app.core.db import session_scope
+    from app.modules.rag.ingest import ingest_manifest
+
+    with session_scope() as session:
+        ingest_manifest(session, Path("data/knowledge/manifest.yaml"))
