@@ -1,0 +1,42 @@
+# Evaluación de recuperación sobre el corpus de DEMOSTRACIÓN (data/knowledge).
+#
+# Mide ingeniería: si una fuente esperada aparece entre los cinco primeros resultados.
+# No mide eficacia del producto ni calidad de las respuestas del agente.
+# `expected`: basta que aparezca una. `forbidden`: no debe aparecer ninguna.
+target_hit_rate: 0.9
+queries:
+  - {id: q01, query: "¿Dónde puedo aprender a cultivar plantas y hortalizas?", expected: [taller-huerto-comunitario]}
+  - {id: q02, query: "Quiero salir a caminar acompañada en las mañanas", expected: [caminata-parque]}
+  - {id: q03, query: "Me gustaría comentar novelas con otras personas", expected: [club-lectura]}
+  - {id: q04, query: "¿Hay algo para cocinar recetas como el pan amasado?", expected: [taller-cocina-recetas-familia]}
+  - {id: q05, query: "Me gusta cantar boleros", expected: [coro-vecinal]}
+  - {id: q06, query: "¿Dónde puedo jugar dominó o brisca?", expected: [tarde-juegos-mesa]}
+  - {id: q07, query: "Necesito aprender a hacer videollamadas con el celular", expected: [taller-celular-sin-apuro, guia-tecnologia-a-su-ritmo]}
+  - {id: q08, query: "Quiero bailar cumbia", expected: [baile-entretenido]}
+  - {id: q09, query: "¿Dan películas en algún lugar?", expected: [cine-foro]}
+  - {id: q10, query: "Me gusta tejer a crochet", expected: [circulo-tejido]}
+  - {id: q11, query: "Quisiera leerle cuentos a niños", expected: [cuentacuentos-intergeneracional]}
+  - {id: q12, query: "Me gustaría escribir mis recuerdos del barrio", expected: [taller-historias-barrio]}
+  - {id: q13, query: "Busco ejercicios suaves que pueda hacer sentada", expected: [gimnasia-suave-silla]}
+  - {id: q14, query: "¿Cómo invito a mi hija sin que se sienta obligada?", expected: [guia-invitar-sin-presionar]}
+  - {id: q15, query: "Mi hijo decide todo por mí y no me pregunta", expected: [guia-autonomia-decisiones]}
+  - {id: q16, query: "No sé de qué hablar con mi nieto", expected: [guia-conversaciones-intergeneracionales, guia-iniciar-conversaciones]}
+  - {id: q17, query: "Siento que no me escuchan cuando cuento algo", expected: [guia-escucha-activa]}
+  - {id: q18, query: "Quiero volver a hablar con una amiga que no veo hace años", expected: [guia-retomar-contacto]}
+  - {id: q19, query: "Me cuesta pedir ayuda sin sentir que pierdo mi independencia", expected: [guia-pedir-aceptar-ayuda]}
+  - {id: q20, query: "¿Mi familia puede ver lo que converso con el asistente?", expected: [guia-privacidad-permisos]}
+  - {id: q21, query: "¿Quién puede mirar la cámara y cómo la pauso?", expected: [guia-privacidad-permisos]}
+  - {id: q22, query: "¿Qué preguntas sirven para empezar una conversación?", expected: [guia-iniciar-conversaciones]}
+  - {id: q23, query: "¿Cómo elegir una actividad que de verdad tenga sentido para mí?", expected: [guia-actividades-con-sentido]}
+  - {id: q24, query: "Quiero aprender a mandar mensajes de voz a mi ritmo", expected: [guia-tecnologia-a-su-ritmo, taller-celular-sin-apuro]}
+  - {id: q25, query: "¿Qué actividad gratuita hay los martes?", expected: [taller-huerto-comunitario, taller-celular-sin-apuro, gimnasia-suave-silla]}
+  - {id: q26, query: "Quiero enseñarle a mi nieta a hacer pan amasado", expected: [guia-conversaciones-intergeneracionales, taller-cocina-recetas-familia]}
+  - {id: q27, query: "No quiero que me llamen todas las noches", expected: [guia-pedir-aceptar-ayuda]}
+  - {id: q28, query: "¿Qué hago si me dicen que no a una invitación?", expected: [guia-invitar-sin-presionar]}
+  - {id: q29, query: "Quiero moverme un poco con música y conocer gente", expected: [baile-entretenido, gimnasia-suave-silla]}
+  - {id: q30, query: "Tengo fotografías antiguas y quiero contar su historia", expected: [taller-historias-barrio, guia-iniciar-conversaciones, guia-retomar-contacto]}
+  # Exclusiones: contenido no aprobado o vencido nunca debe recuperarse.
+  - {id: x01, query: "Quiero ir a un paseo al museo con visita guiada", expected: [], forbidden: [paseo-museo]}
+  - {id: x02, query: "¿Cuándo es la feria de trueque de plantas y esquejes?", expected: [], forbidden: [feria-trueque-plantas]}
+  - {id: x03, query: "Tardes de piscina y paseo a la playa en verano", expected: [], forbidden: [agenda-verano-2025]}
+  - {id: x04, query: "Horarios de sueño, siestas y comidas en una rutina fija", expected: [], forbidden: [borrador-rutinas-diarias]}

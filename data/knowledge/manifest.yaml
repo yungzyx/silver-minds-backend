@@ -1,0 +1,416 @@
+# Manifiesto de conocimiento de DEMOSTRACIÓN.
+#
+# Todo este material es ficticio o fue redactado por el equipo para la demo del
+# hackathon. Las guías NO han sido revisadas por profesionales y las actividades NO
+# existen: "Comuna Demo" no es un lugar real. "approved" significa aquí "aprobado por
+# el equipo para la demostración", no validado para un piloto.
+#
+# Ingesta: python -m app.cli ingest data/knowledge/manifest.yaml
+
+documents:
+  - slug: guia-escucha-activa
+    collection: guide
+    title: "Escuchar antes de responder"
+    path: guides/escucha-activa.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-autonomia-decisiones
+    collection: guide
+    title: "Acompañar sin decidir por la otra persona"
+    path: guides/autonomia-y-decisiones.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-iniciar-conversaciones
+    collection: guide
+    title: "Cómo empezar una conversación que valga la pena"
+    path: guides/iniciar-conversaciones.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-invitar-sin-presionar
+    collection: guide
+    title: "Invitar sin presionar"
+    path: guides/invitar-sin-presionar.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-actividades-con-sentido
+    collection: guide
+    title: "Elegir actividades que tengan sentido"
+    path: guides/actividades-con-sentido.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-retomar-contacto
+    collection: guide
+    title: "Retomar el contacto con una amistad"
+    path: guides/retomar-contacto.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-tecnologia-a-su-ritmo
+    collection: guide
+    title: "Tecnología al ritmo de cada persona"
+    path: guides/tecnologia-a-su-ritmo.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-pedir-aceptar-ayuda
+    collection: guide
+    title: "Pedir y aceptar ayuda sin perder el control"
+    path: guides/pedir-y-aceptar-ayuda.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-conversaciones-intergeneracionales
+    collection: guide
+    title: "Conversar entre generaciones"
+    path: guides/conversaciones-intergeneracionales.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: guia-privacidad-permisos
+    collection: guide
+    title: "Privacidad y permisos: tú decides qué se comparte"
+    path: guides/privacidad-y-permisos.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  # Los dos siguientes existen para demostrar las exclusiones.
+  - slug: borrador-rutinas-diarias
+    collection: guide
+    title: "Rutinas diarias (borrador)"
+    path: guides/borrador-rutinas.md
+    source: Equipo Silver Minds (material de demostración)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "0"
+    territory: CL
+    approval_status: draft
+    valid_from: 2026-10-01
+
+  - slug: agenda-verano-2025
+    collection: activity_catalog
+    title: "Agenda de verano 2025"
+    path: guides/agenda-verano-2025.md
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2025-01-05
+    version: "1"
+    territory: CL
+    approval_status: approved
+    valid_from: 2025-01-05
+    valid_until: 2025-03-31
+
+activities:
+  - slug: taller-huerto-comunitario
+    title: "Taller de huerto comunitario"
+    description: "Cultivo de hortalizas, hierbas y flores en cajones elevados. Cada participante cuida una jardinera y se comparten semillas, almácigos y cosecha. Ideal para quienes disfrutan la jardinería y las plantas."
+    location: "Centro Comunitario Demo, patio interior"
+    schedule_text: "Martes de 10:00 a 11:30"
+    cost: "Gratuito"
+    requirements: "Ninguno. Se prestan herramientas y guantes"
+    accessibility: "Cajones a la altura de la cintura, sillas disponibles y acceso sin escaleras"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: caminata-parque
+    title: "Caminata grupal por el parque"
+    description: "Caminata tranquila en grupo por un circuito plano, con pausas para conversar y elongar. Cada persona camina a su propio ritmo."
+    location: "Parque Demo, entrada principal"
+    schedule_text: "Lunes y jueves de 9:30 a 10:30"
+    cost: "Gratuito"
+    requirements: "Zapatillas cómodas y botella de agua"
+    accessibility: "Circuito plano con bancas cada 200 metros"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: club-lectura
+    title: "Club de lectura"
+    description: "Un libro al mes, comentado en grupo con té y galletas. Se leen novelas, cuentos y crónicas elegidos por votación entre los lectores."
+    location: "Biblioteca Demo, sala de lectura"
+    schedule_text: "Miércoles de 16:00 a 17:30"
+    cost: "Gratuito. La biblioteca presta los libros"
+    requirements: "Ninguno"
+    accessibility: "Ejemplares en letra grande y audiolibros disponibles"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: taller-cocina-recetas-familia
+    title: "Taller de cocina: recetas de familia"
+    description: "Cada sesión una persona enseña una receta de su casa: pan amasado, sopaipillas, mermeladas o guisos. Se cocina en grupo y se arma un recetario común."
+    location: "Sede Vecinal Demo, cocina comunitaria"
+    schedule_text: "Sábados de 11:00 a 13:00"
+    cost: "$2.000 por sesión para ingredientes"
+    requirements: "Delantal"
+    accessibility: "Mesones con sillas y cocina en un solo nivel"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: coro-vecinal
+    title: "Coro vecinal"
+    description: "Canto en grupo de boleros, tonadas, valses y canciones populares. No se necesita saber leer música ni tener experiencia cantando."
+    location: "Sede Vecinal Demo, salón principal"
+    schedule_text: "Viernes de 18:00 a 19:30"
+    cost: "Gratuito"
+    requirements: "Ninguno"
+    accessibility: "Ensayo sentado para quien lo prefiera"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: tarde-juegos-mesa
+    title: "Tarde de juegos de mesa"
+    description: "Dominó, brisca, cartas, ludo y ajedrez en mesas compartidas. Se arman parejas y pequeños campeonatos amistosos."
+    location: "Centro Comunitario Demo, sala 2"
+    schedule_text: "Jueves de 16:00 a 18:00"
+    cost: "Gratuito"
+    requirements: "Ninguno"
+    accessibility: "Naipes de números grandes y buena iluminación"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: taller-celular-sin-apuro
+    title: "Taller Celular sin apuro"
+    description: "Aprender a usar el teléfono paso a paso: mensajes de voz, videollamadas, fotografías y cómo reconocer estafas. Grupos pequeños y un tema por clase."
+    location: "Biblioteca Demo, sala multiuso"
+    schedule_text: "Martes de 15:30 a 16:30"
+    cost: "Gratuito"
+    requirements: "Llevar el propio celular cargado"
+    accessibility: "Guías impresas en letra grande y monitores que acompañan uno a uno"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: baile-entretenido
+    title: "Baile entretenido"
+    description: "Cumbia, cueca, tango y música de los sesenta con pasos simples. Sirve para moverse, reírse y conocer gente."
+    location: "Gimnasio Municipal Demo"
+    schedule_text: "Lunes de 11:00 a 12:00"
+    cost: "Gratuito"
+    requirements: "Ropa cómoda"
+    accessibility: "Se puede seguir la clase sentado; piso sin desniveles"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: cine-foro
+    title: "Cine foro"
+    description: "Proyección de una película clásica o chilena seguida de una conversación abierta sobre lo que cada persona vio en ella."
+    location: "Biblioteca Demo, auditorio"
+    schedule_text: "Último viernes de cada mes a las 17:00"
+    cost: "Gratuito"
+    requirements: "Ninguno"
+    accessibility: "Subtítulos, butacas con apoyabrazos y espacio para sillas de ruedas"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: circulo-tejido
+    title: "Círculo de tejido y conversa"
+    description: "Tejido a palillo y crochet en compañía. Quienes saben enseñan a quienes empiezan y se tejen mantas para donar."
+    location: "Centro Comunitario Demo, sala 1"
+    schedule_text: "Miércoles de 10:30 a 12:00"
+    cost: "Gratuito"
+    requirements: "Llevar lana y palillos, si se tienen"
+    accessibility: "Sillas con respaldo y buena luz natural"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: cuentacuentos-intergeneracional
+    title: "Cuentacuentos con niños del jardín"
+    description: "Personas mayores leen cuentos y enseñan juegos de antes a niños y niñas del jardín infantil vecino. Actividad entre generaciones con un rol claro para cada voluntario."
+    location: "Jardín Infantil Demo"
+    schedule_text: "Sábados de 10:00 a 11:00"
+    cost: "Gratuito"
+    requirements: "Inscripción previa y una breve inducción"
+    accessibility: "Sala en primer piso"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: taller-historias-barrio
+    title: "Taller Historias de barrio"
+    description: "Escribir y grabar recuerdos del barrio, los oficios y la familia para armar un libro colectivo. Se trabaja con fotografías antiguas y relatos orales."
+    location: "Biblioteca Demo, sala de lectura"
+    schedule_text: "Jueves de 10:30 a 12:00"
+    cost: "Gratuito"
+    requirements: "Ninguno. Se puede dictar en lugar de escribir"
+    accessibility: "Grabadora disponible para quien prefiera contar en voz alta"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  - slug: gimnasia-suave-silla
+    title: "Gimnasia suave en silla"
+    description: "Ejercicios de movilidad, equilibrio y respiración que se hacen sentado o apoyado en una silla, con música tranquila."
+    location: "Gimnasio Municipal Demo"
+    schedule_text: "Martes y viernes de 9:00 a 9:45"
+    cost: "Gratuito"
+    requirements: "Ropa cómoda"
+    accessibility: "Toda la clase puede hacerse sentado"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "1"
+    approval_status: approved
+    valid_from: 2026-10-01
+    valid_until: 2027-03-31
+
+  # Las dos siguientes existen para demostrar las exclusiones.
+  - slug: feria-trueque-plantas
+    title: "Feria de trueque de plantas"
+    description: "Intercambio de plantas, esquejes y maceteros entre vecinos. Edición de otoño ya realizada."
+    location: "Plaza Demo"
+    schedule_text: "Sábado 12 de abril de 2025"
+    cost: "Gratuito"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2025-03-20
+    version: "1"
+    approval_status: approved
+    valid_from: 2025-03-20
+    valid_until: 2025-04-12
+
+  - slug: paseo-museo
+    title: "Paseo al museo"
+    description: "Visita guiada al museo con traslado en bus. Propuesta aún sin confirmar fecha, cupos ni financiamiento."
+    location: "Por definir"
+    schedule_text: "Por definir"
+    territory: CL
+    source: Catálogo de demostración (datos ficticios)
+    responsible: Equipo Silver Minds
+    reviewed_at: 2026-10-01
+    version: "0"
+    approval_status: draft
+    valid_from: 2026-10-01

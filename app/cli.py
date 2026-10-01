@@ -4,11 +4,13 @@ import argparse
 import sys
 import uuid
 from datetime import timedelta
+from pathlib import Path
 
 import jwt
 
 from app.core.clock import utcnow
 from app.core.config import get_settings
+from app.core.db import session_scope
 
 
 def dev_token(args: argparse.Namespace) -> int:
@@ -33,6 +35,26 @@ def dev_token(args: argparse.Namespace) -> int:
     return 0
 
 
+def ingest(args: argparse.Namespace) -> int:
+    """Ingesta de conocimiento revisado desde un manifiesto."""
+    from app.modules.rag.ingest import ingest_manifest
+
+    with session_scope() as db:
+        report = ingest_manifest(db, Path(args.manifest))
+    sys.stdout.write(
+        f"Documentos indexados: {report.documents_indexed} · sin cambios: "
+        f"{report.documents_unchanged} · no aprobados: {report.documents_not_approved}\n"
+        f"Fragmentos creados: {report.chunks_created} · duplicados omitidos: "
+        f"{report.chunks_deduplicated}\n"
+        f"Actividades actualizadas: {report.activities_upserted} · sin cambios: "
+        f"{report.activities_unchanged}\n"
+        f"Versión del índice: {report.index_version}\n"
+    )
+    for error in report.errors:
+        sys.stderr.write(f"ERROR: {error}\n")
+    return 1 if report.errors else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app.cli", description="Administración de Silver Minds")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -42,6 +64,10 @@ def build_parser() -> argparse.ArgumentParser:
     token.add_argument("--sub", help="UUID de la persona usuaria")
     token.add_argument("--hours", type=int, default=12)
     token.set_defaults(handler=dev_token)
+
+    ingest_parser = commands.add_parser("ingest", help="Ingesta de conocimiento revisado")
+    ingest_parser.add_argument("manifest", help="Ruta al manifiesto YAML")
+    ingest_parser.set_defaults(handler=ingest)
     return parser
 
 
