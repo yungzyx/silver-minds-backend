@@ -1,0 +1,79 @@
+# Blueprint de Render: API y worker separados, desde la misma imagen.
+#
+# ESTADO: preparado, NO desplegado ni validado contra Render (faltan cuenta y
+# autorización de gasto). Campos según https://render.com/docs/blueprint-spec,
+# consultado el 1 de octubre de 2026.
+#
+# La base de datos vive en Supabase (PostgreSQL con pgvector), no en Render.
+# El worker no tiene plan gratuito en Render: crear este Blueprint genera cobros.
+
+services:
+  - type: web
+    name: silver-minds-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: 0.5c-512mb
+    # Una sola instancia: la transmisión de cámara usa un relevo en memoria.
+    numInstances: 1
+    healthCheckPath: /api/v1/health/ready
+    preDeployCommand: alembic upgrade head
+    autoDeployTrigger: checksPass
+    envVars:
+      - fromGroup: silver-minds-shared
+
+  - type: worker
+    name: silver-minds-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: python -m app.worker.main
+    plan: 0.5c-512mb
+    autoDeployTrigger: checksPass
+    envVars:
+      - fromGroup: silver-minds-shared
+
+envVarGroups:
+  - name: silver-minds-shared
+    envVars:
+      - key: ENVIRONMENT
+        value: staging
+      # Cadena de Supabase en modo sesión (puerto 5432), con el prefijo
+      # postgresql+psycopg://
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: audio-temp
+      # API y worker no comparten disco: los audios deben ir a Supabase Storage.
+      - key: STORAGE_PROVIDER
+        value: supabase
+      - key: AI_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_TEXT_MODEL
+        value: gpt-4.1-mini
+      - key: OPENAI_EMBEDDING_MODEL
+        value: text-embedding-3-small
+      - key: OPENAI_MODERATION_MODEL
+        value: omni-moderation-latest
+      - key: OPENAI_TRANSCRIPTION_MODEL
+        value: gpt-4o-mini-transcribe
+      - key: OPENAI_TTS_MODEL
+        value: gpt-4o-mini-tts
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: PUBLIC_LINK_BASE_URL
+        sync: false
+      - key: PUBLIC_APP_BASE_URL
+        sync: false
+      - key: DEFAULT_COUNTRY
+        value: CL

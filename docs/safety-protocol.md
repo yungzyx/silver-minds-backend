@@ -112,6 +112,7 @@ La aplicación puede ofrecer un botón para llamar. «Abrir una llamada» no equ
 - El agente no propone a un contacto en particular: un familiar podría ser parte del problema.
 - La persona revisa el texto y confirma el envío. Solo se comparte ese texto.
 - El correo es complementario; **no es atención inmediata** y así se indica.
+- El panel familiar **no** muestra el estado de seguridad ni las conversaciones.
 
 ## 8. Validación de salida
 
@@ -121,7 +122,8 @@ Antes de mostrar una respuesta normal:
 2. Se descartan propuestas con actividades inexistentes, vencidas o no aprobadas.
 3. Se descartan contactos que no sean del propietario o no estén aceptados.
 4. Se descartan fuentes que no estuvieran en el contexto recuperado.
-5. Se descartan memorias candidatas con expresiones de crisis.
+5. Se descartan memorias candidatas con expresiones de crisis, estados de ánimo, problemas
+   de salud o conclusiones sobre la persona (`memory_forbidden` en la política).
 
 ## 9. Fallos
 

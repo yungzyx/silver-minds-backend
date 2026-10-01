@@ -1,6 +1,6 @@
 # Arquitectura
 
-Versión 1 · 1 de octubre de 2026
+Versión 2 · 1 de octubre de 2026 · incluye el dispositivo en casa y el panel familiar ([ADR 0001](adr/0001-dispositivo-y-panel-familiar.md))
 
 ## 1. Alcance
 
@@ -8,8 +8,13 @@ Backend de un agente conversacional para una persona mayor autovalente (60–75 
 Conversa, recuerda preferencias confirmadas, propone actividades y facilita invitaciones
 aprobadas a contactos que aceptaron participar.
 
+La persona usa el agente desde un **dispositivo en casa** (pantalla con un personaje,
+un botón y voz), simulado en una página web. Su familia tiene un **panel** con señales
+de actividad y, cuando la persona mayor la enciende, la cámara en vivo.
+
 Fuera de alcance en esta versión: búsqueda web abierta, llamadas autónomas a servicios
-de emergencia, avisos automáticos a familiares e interpretación de tono de voz.
+de emergencia, avisos automáticos a familiares, interpretación de tono de voz e
+inferencia de emociones o estados de salud a partir de la cámara.
 
 La efectividad del producto sobre soledad o comprensión no está demostrada. Este
 documento describe ingeniería, no resultados.
@@ -53,12 +58,13 @@ rutas (router.py)  →  servicios (service.py)  →  repositorios (repository.py
 | `safety` | Reglas, moderación, clasificador, enrutador y validación de salida |
 | `actions` | Propuestas, invitaciones, actividades y feedback |
 | `voice` | Carga, validación, transcripción y síntesis |
+| `devices` | Dispositivo en casa, acceso familiar, métricas y transmisión en vivo |
 | `followup` | Recordatorios, seguimiento, auditoría y retención |
 
 ## 5. Flujo de cada mensaje
 
 ```text
-1. Identidad            JWT de Supabase → perfil del propietario
+1. Identidad            JWT de Supabase o token del dispositivo → perfil del propietario
 2. Seguridad            reglas → moderación → clasificador contextual → enrutador
 3. ¿Ruta normal?
      no → protocolo fijo de apoyo, sin propuestas ni memorias candidatas
@@ -200,7 +206,64 @@ trabajos reintentables vuelven a `queued`; los de envío siguen la regla de ambi
 Los logs generales no contienen texto de mensajes. La auditoría registra acción,
 entidad y actor, sin contenido.
 
-## 12. Decisiones y motivos
+## 12. Dispositivo, panel familiar y credenciales
+
+Tres credenciales, cada una con su alcance (`app/api/deps.py`):
+
+| Credencial | Quién | Alcance |
+|---|---|---|
+| `Bearer` JWT de Supabase | La cuenta de la persona mayor | Completo, incluida la administración de dispositivos y accesos |
+| `Device <token>` | La pantalla en su casa | Actúa por ella: conversar, aprobar, confirmar memorias, cámara. **No** administra dispositivos ni accesos |
+| `Viewer <token>` | Un contacto con acceso al panel | Solo `/family/*` |
+
+Los tokens de dispositivo y de acceso se guardan como hash. En los enlaces viajan en el
+fragmento (`#token=…`), que el navegador no envía al servidor.
+
+### Lo que decide la persona mayor
+
+- Quién ve el panel: el acceso se da a un contacto que **aceptó participar**, vence a los
+  30 días y se puede quitar en cualquier momento. Revocar el contacto revoca su acceso.
+- Si ese acceso incluye la cámara (`can_view_camera`).
+- Cuándo se comparte la cámara: solo mientras ella la mantiene encendida desde el
+  dispositivo. La pantalla muestra una luz, un aviso y el nombre de quien mira.
+
+### Transmisión en vivo
+
+```text
+dispositivo ──WebSocket──▶ API (relevo en memoria) ──WebSocket──▶ panel familiar
+   cuadros JPEG                 no se almacena nada                    <img>
+```
+
+- El dispositivo envía cuadros JPEG (4 por segundo, hasta 300 kB). El servidor comprueba
+  la firma JPEG, el tamaño y la frecuencia.
+- Los cuadros se reenvían solo si la cámara está encendida y solo a accesos con permiso
+  de cámara. Quitar un acceso corta la transmisión en curso.
+- Cada sesión de visualización queda en la auditoría (quién y cuándo).
+- El relevo vive en el proceso de la API: **una sola instancia**. Con más instancias haría
+  falta un canal compartido.
+
+### Métricas del panel
+
+Son conteos y marcas de tiempo: dispositivo encendido, última conversación, llamadas al
+asistente por botón y por nombre, minutos con movimiento frente al dispositivo,
+actividades aprobadas y realizadas, invitaciones enviadas y aceptadas.
+
+- La **presencia** es un número calculado en el dispositivo (cuánto cambió la imagen
+  entre dos muestras). No sale ninguna imagen por esa vía y solo se mide con la cámara
+  encendida.
+- El panel **no** muestra conversaciones, memorias ni el estado de seguridad de la
+  persona. Del contenido solo aparece el título de las invitaciones dirigidas a quien mira.
+- No se infieren emociones ni estados de salud: no hay respaldo para presentarlos como
+  métricas.
+
+### Voz en el dispositivo simulado
+
+La página usa la Web Speech API del navegador para oír el nombre del dispositivo y para
+hablar. En Chrome ese reconocimiento envía el audio a un servicio del proveedor del
+navegador. En un dispositivo real se reemplaza por un detector local de la palabra de
+activación y por el endpoint de audio del backend (sección 9), que ya existe.
+
+## 13. Decisiones y motivos
 
 | Decisión | Motivo |
 |---|---|
@@ -210,3 +273,6 @@ entidad y actor, sin contenido.
 | Plantillas fijas en rutas de apoyo | El texto de apoyo no depende de un modelo generativo |
 | Estimación de tokens por caracteres | Evita descargas en tiempo de ejecución; el límite es aproximado |
 | `ffprobe` para validar audio | Validación real de contenedor y duración, no de extensión |
+| Relevo de cuadros JPEG por WebSocket | Más simple y predecible que WebRTC para una demo; sin servidores STUN/TURN |
+| Token en el fragmento del enlace | No llega al servidor ni a sus registros |
+| Voz del navegador en el dispositivo simulado | Funciona sin credenciales; el endpoint de audio queda para el dispositivo real |

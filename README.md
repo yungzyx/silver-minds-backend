@@ -1,37 +1,141 @@
-# Silver Minds — backend
+# Silver Minds — backend, dispositivo y panel familiar
 
-Backend del MVP de Silver Minds (Hack4Seniors UDD): un agente que conversa con una
-persona mayor autovalente, recuerda preferencias confirmadas, propone actividades
-significativas y facilita invitaciones aprobadas a familiares o amigos.
+MVP de Silver Minds para Hack4Seniors UDD. Un agente conversa con una persona mayor
+autovalente desde una pantalla en su casa, recuerda preferencias **confirmadas**, propone
+actividades y facilita invitaciones **aprobadas** a familiares o amigos. La familia puede
+ver señales de actividad y, cuando la persona mayor la enciende, la cámara en vivo.
 
-La persona mayor conserva el control. La efectividad sobre soledad o comprensión
-**no está demostrada**.
+> La persona mayor conserva el control. La efectividad sobre soledad o comprensión **no
+> está demostrada**. Este software no es un servicio de emergencia ni entrega atención
+> clínica, y su protocolo de apoyo necesita revisión profesional antes de un piloto.
 
-## Árbol del proyecto
+## Qué incluye
 
-```text
-app/
-  api/            Ensamblado de rutas /api/v1
-  core/           Configuración, base de datos, autenticación y errores
-  models/         Modelos SQLAlchemy
-  modules/        Módulos de negocio (rutas, servicios y repositorios)
-    profiles/     Perfil y preferencias
-    memory/       Memorias candidatas y confirmadas
-    contacts/     Contactos y aceptación
-    conversations/ Conversaciones y agente contextual
-    rag/          Ingesta y recuperación
-    safety/       Seguridad conversacional
-    actions/      Propuestas, invitaciones y actividades
-    voice/        Audios por turnos
-    followup/     Recordatorios, seguimiento y auditoría
-  integrations/   Adaptadores: IA, correo y almacenamiento
-  worker/         Cola persistente y proceso worker
-config/           Políticas, recursos de ayuda y prompts versionados
-migrations/       Migraciones Alembic
-data/             Conocimiento y datos ficticios de demostración
-evals/            Evaluaciones de RAG y de seguridad
-tests/            Pruebas unitarias y de integración
-docs/             Arquitectura, contratos y protocolo
+| Parte | Dónde |
+|---|---|
+| API `/api/v1` con OpenAPI | `app/` · documentación en `/docs` |
+| Worker con cola persistente en PostgreSQL | `app/worker/` |
+| Dispositivo simulado: personaje, botón y llamada por nombre | `web/device/` · `/device/` |
+| Panel familiar: cámara en vivo y métricas | `web/family/` · `/family/` |
+| Política de seguridad y recursos de ayuda versionados | `config/` |
+| Conocimiento y actividades de demostración (ficticios) | `data/knowledge/` |
+| Evaluaciones de RAG y de seguridad | `evals/` |
+
+## Requisitos
+
+- Python 3.12 y [uv](https://docs.astral.sh/uv/)
+- PostgreSQL 15 o superior con las extensiones `vector` y `unaccent`
+- `ffmpeg` (aporta `ffprobe`, que valida los audios)
+
+Sin credenciales externas todo funciona con adaptadores simulados.
+
+## Instalación local
+
+```bash
+uv sync
 ```
 
-La documentación de instalación se completa en la fase 1.
+```bash
+createdb silver_minds
+```
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env` y reemplaza `SUPABASE_JWT_SECRET` por un valor aleatorio de al menos 32
+caracteres. Luego aplica las migraciones:
+
+```bash
+uv run alembic upgrade head
+```
+
+## Ejecutar
+
+API (sirve también el dispositivo y el panel):
+
+```bash
+uv run uvicorn app.main:app --port 8000
+```
+
+Worker, en otra terminal:
+
+```bash
+uv run python -m app.worker.main
+```
+
+### Con Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Levanta PostgreSQL con pgvector, aplica las migraciones e inicia la API y el worker.
+**No se verificó en la máquina de desarrollo**, que no tiene Docker instalado.
+
+## Demostración
+
+Prepara datos ficticios (Rosa, su hija Camila, un dispositivo y un acceso familiar):
+
+```bash
+uv run python -m app.cli demo-setup
+```
+
+El comando imprime dos enlaces con tokens: el dispositivo de Rosa y el panel de Camila.
+Ábrelos en Chrome; cámara y micrófono requieren `localhost` o HTTPS. El recorrido completo
+está en [docs/demo.md](docs/demo.md).
+
+Los correos simulados quedan en `var/outbox/`.
+
+## Comandos administrativos
+
+| Comando | Qué hace |
+|---|---|
+| `uv run python -m app.cli demo-setup` | Datos ficticios y enlaces de la demostración |
+| `uv run python -m app.cli ingest data/knowledge/manifest.yaml` | Ingesta de conocimiento revisado |
+| `uv run python -m app.cli eval-rag` | 30 consultas con fuentes esperadas |
+| `uv run python -m app.cli eval-safety` | 52 escenarios sintéticos con señales simuladas |
+| `uv run python -m app.cli eval-safety --live` | Los mismos escenarios contra el proveedor real |
+| `uv run python -m app.cli dev-token` | JWT local para probar la API como cuenta |
+
+## Pruebas
+
+Usan PostgreSQL real y proveedores simulados:
+
+```bash
+createdb silver_minds_test
+```
+
+```bash
+uv run pytest
+```
+
+```bash
+uv run ruff check . && uv run ruff format --check .
+```
+
+CI (GitHub Actions) ejecuta lo mismo con un contenedor `pgvector/pgvector:pg17`.
+
+## Proveedores reales
+
+Cada integración se activa con variables de entorno; ver [.env.example](.env.example).
+
+| Integración | Variable | Estado |
+|---|---|---|
+| OpenAI (Responses, embeddings, moderación, voz) | `AI_PROVIDER=openai` | Implementada, **sin ejecutar contra la API real** |
+| Resend | `EMAIL_PROVIDER=resend` | Implementada, **sin ejecutar contra la API real** |
+| Supabase Storage | `STORAGE_PROVIDER=supabase` | Implementada, **sin ejecutar contra un proyecto real** |
+| Supabase Auth | `SUPABASE_JWKS_URL` | Verificación probada con claves ES256 locales |
+
+`GET /api/v1/health/ready` indica qué adaptadores están activos.
+
+## Documentación
+
+- [Arquitectura](docs/architecture.md)
+- [Entidades y estados](docs/entities-and-states.md)
+- [Contratos de API](docs/api-contracts.md)
+- [Protocolo de seguridad](docs/safety-protocol.md)
+- [ADR 0001: dispositivo y panel familiar](docs/adr/0001-dispositivo-y-panel-familiar.md)
+- [Demostración](docs/demo.md)
+- [Despliegue](docs/deployment.md)
+- [Plan y estado real](Silver_Minds_Backend_Plan.md)

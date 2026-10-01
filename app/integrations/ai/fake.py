@@ -68,7 +68,7 @@ _LIKE = re.compile(
 )
 _PREFER = re.compile(r"\bprefiero\s+(.+?)(?:[.,;!?]|$)")
 _DISLIKE = re.compile(r"\bno me gusta(?:n)?\s+(.+?)(?:[.,;!?]|$)")
-_SCHEDULE_HINT = re.compile(r"mañana|tarde|noche|hora|temprano|dia|lunes|martes|fin de semana")
+_SCHEDULE_HINT = re.compile(r"mañana|tarde|noche|hora|temprano|d[ií]a|lunes|martes|fin de semana")
 
 DEFAULT_TRANSCRIPT = "Hola, me gustaría hacer algo distinto esta semana."
 
@@ -162,7 +162,7 @@ class FakeAIProvider:
         if self.scripted_draft is not None:
             return self.scripted_draft
         text = normalize(request.message)
-        candidates = self._memory_candidates(text)
+        candidates = self._memory_candidates(request.message.strip().lower())
         proposals, used = self._proposals(text, request)
         greeting = (
             f"Gracias por contarme, {request.preferred_name}."

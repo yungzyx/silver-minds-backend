@@ -58,6 +58,14 @@ Los recursos de ayuda y las plantillas del protocolo **no** son tablas: están e
 | `reminders` | `owner_id`, `proposal_id`, `kind`, `due_at`, `status` | `kind`: `reminder`, `followup` |
 | `activity_feedback` | `owner_id`, `proposal_id`, `happened`, `rating`, `comment` | |
 
+### Dispositivo y familia
+
+| Tabla | Campos principales | Notas |
+|---|---|---|
+| `devices` | `owner_id`, `name`, `token_hash`, `status`, `camera_sharing`, `last_seen_at` | `name` es como se le llama |
+| `family_access` | `owner_id`, `contact_id`, `token_hash`, `can_view_camera`, `status`, `expires_at`, `delivery` | Un acceso activo por contacto |
+| `device_events` | `owner_id`, `device_id`, `kind`, `value` | Señales: `wake_button`, `wake_name`, `presence`, `camera_on`, `camera_off`, `view_start`. Sin imagen, audio ni texto |
+
 ### Operación
 
 | Tabla | Campos principales | Notas |
@@ -146,8 +154,31 @@ uploaded ──▶ processing ──▶ done ──limpieza──▶ deleted
 ### Solicitud de apoyo
 
 ```text
-draft ──aprobar──▶ approved ──worker──▶ sent | send_uncertain | failed
+draft ──aprobar──▶ queued ──worker──▶ sending ──▶ sent | send_uncertain | failed
   └──cancelar──▶ cancelled
 ```
 
 Las solicitudes de apoyo no se pausan por el estado de seguridad ni por cuotas.
+
+### Dispositivo
+
+```text
+active ──revocar──▶ revoked   (corta la transmisión y apaga la cámara)
+```
+
+`camera_sharing` cambia solo por una orden del propio dispositivo.
+
+### Acceso familiar
+
+```text
+active ──quitar acceso / revocar contacto──▶ revoked
+   └── vence a los 30 días: el token deja de servir
+```
+
+### Recordatorio
+
+```text
+reminder:  queued ──worker──▶ sending ──▶ sent | send_uncertain | failed
+followup:  pending ──feedback──▶ done
+ambos:     ──editar o cancelar la propuesta──▶ cancelled
+```
