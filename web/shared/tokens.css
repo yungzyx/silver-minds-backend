@@ -1,0 +1,93 @@
+/* Tokens de diseño compartidos por el dispositivo y el panel familiar.
+   Dirección: cálida y orgánica. Papel, tinta y terracota; ámbar para el personaje. */
+:root {
+  --color-paper: oklch(94% 0.025 80);
+  --color-paper-deep: oklch(89% 0.035 75);
+  --color-ink: oklch(24% 0.03 300);
+  --color-ink-soft: oklch(42% 0.03 300);
+  --color-night: oklch(21% 0.035 300);
+  --color-night-raised: oklch(28% 0.04 300);
+  --color-cream: oklch(95% 0.03 85);
+  --color-clay: oklch(60% 0.15 38);
+  --color-clay-deep: oklch(48% 0.14 35);
+  --color-amber: oklch(82% 0.15 78);
+  --color-coral: oklch(70% 0.17 40);
+  --color-teal: oklch(72% 0.11 185);
+  --color-calm: oklch(78% 0.07 250);
+  --color-live: oklch(62% 0.22 25);
+  --color-ok: oklch(62% 0.13 150);
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  /* Atkinson Hyperlegible: diseñada para distinguir letras con baja visión. */
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+
+  --text-sm: 0.95rem;
+  --text-base: 1.125rem;
+  --text-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-xl: clamp(1.6rem, 1.3rem + 1.4vw, 2.4rem);
+  --text-hero: clamp(2.6rem, 1.6rem + 4.5vw, 5rem);
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --space-5: 4rem;
+
+  --radius-sm: 10px;
+  --radius-md: 22px;
+  --radius-lg: 40px;
+
+  --shadow-soft: 0 1px 2px oklch(24% 0.03 300 / 0.08), 0 12px 32px oklch(24% 0.03 300 / 0.12);
+  --shadow-device: 0 2px 0 oklch(100% 0 0 / 0.5) inset, 0 40px 80px oklch(24% 0.05 40 / 0.28),
+    0 8px 18px oklch(24% 0.05 40 / 0.2);
+
+  --duration-fast: 150ms;
+  --duration-normal: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  /* Grano sutil para que el fondo no sea un plano vacío. */
+  background-image: radial-gradient(oklch(24% 0.03 300 / 0.05) 1px, transparent 1px),
+    radial-gradient(120% 80% at 10% 0%, oklch(96% 0.04 85), transparent 60%);
+  background-size: 5px 5px, 100% 100%;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 3px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

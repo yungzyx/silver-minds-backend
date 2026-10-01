@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel familiar · Silver Minds</title>
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap"
+    />
+    <link rel="stylesheet" href="/shared/tokens.css" />
+    <link rel="stylesheet" href="/family/family.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <p class="brand">Silver Minds <span>· panel familiar</span></p>
+      <p id="viewer" class="viewer"></p>
+    </header>
+
+    <main id="panel" class="panel" hidden>
+      <section class="intro" aria-labelledby="person-name">
+        <h1 id="person-name" class="person"></h1>
+        <p class="status-line">
+          <span id="device-dot" class="dot" aria-hidden="true"></span>
+          <span id="device-status"></span>
+          <span class="separator" aria-hidden="true">·</span>
+          <span id="last-interaction"></span>
+        </p>
+      </section>
+
+      <section class="live" aria-labelledby="live-title">
+        <h2 id="live-title" class="eyebrow">En casa, ahora</h2>
+        <figure class="frame" id="frame" data-live="false">
+          <img id="live-image" alt="Imagen en vivo de la cámara del dispositivo" hidden />
+          <figcaption id="live-message" class="live-message"></figcaption>
+          <p class="live-badge" aria-hidden="true"><span class="dot dot-live"></span> En vivo</p>
+        </figure>
+        <p class="fineprint">
+          La imagen se transmite en vivo y no se guarda. Solo se ve mientras
+          <span class="person-inline"></span> tiene la cámara encendida, y su pantalla muestra quién
+          está mirando.
+        </p>
+      </section>
+
+      <section class="today" aria-labelledby="today-title">
+        <h2 id="today-title" class="eyebrow">Hoy</h2>
+        <p class="hero-figure">
+          <span id="interactions" class="hero-number">0</span>
+          <span id="interactions-label" class="hero-label">veces conversó con el asistente</span>
+        </p>
+        <dl class="facts">
+          <div>
+            <dt>Lo llamó con el botón</dt>
+            <dd id="calls-button">0</dd>
+          </div>
+          <div>
+            <dt>Lo llamó por su nombre</dt>
+            <dd id="calls-name">0</dd>
+          </div>
+          <div>
+            <dt>Minutos con movimiento frente al dispositivo</dt>
+            <dd id="presence">0</dd>
+          </div>
+        </dl>
+        <p id="presence-note" class="fineprint"></p>
+      </section>
+
+      <section class="week" aria-labelledby="week-title">
+        <h2 id="week-title" class="eyebrow">Últimos siete días</h2>
+        <figure class="chart">
+          <svg id="chart" viewBox="0 0 420 180" role="img" aria-labelledby="chart-summary"></svg>
+          <figcaption id="chart-summary" class="fineprint"></figcaption>
+        </figure>
+        <dl class="facts facts-row">
+          <div>
+            <dt>Actividades aprobadas</dt>
+            <dd id="approved">0</dd>
+          </div>
+          <div>
+            <dt>Actividades realizadas</dt>
+            <dd id="done">0</dd>
+          </div>
+          <div>
+            <dt>Invitaciones enviadas</dt>
+            <dd id="sent">0</dd>
+          </div>
+          <div>
+            <dt>Invitaciones aceptadas</dt>
+            <dd id="accepted">0</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="timeline" aria-labelledby="timeline-title">
+        <h2 id="timeline-title" class="eyebrow">Lo último</h2>
+        <ol id="timeline-list" class="timeline-list"></ol>
+      </section>
+
+      <footer class="note">
+        <p>
+          Este panel muestra señales de actividad que <span class="person-inline"></span> decidió
+          compartir contigo. No muestra sus conversaciones ni lo que el asistente recuerda, y no
+          reemplaza una llamada.
+        </p>
+      </footer>
+    </main>
+
+    <p id="gate" class="gate">Abriendo el panel…</p>
+
+    <script type="module" src="/family/family.js"></script>
+  </body>
+</html>

@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 import jwt
-from fastapi import Depends, Request
 from jwt import PyJWKClient
 
 from app.core.config import Settings, get_settings
@@ -81,12 +80,3 @@ class TokenVerifier:
 @lru_cache
 def get_token_verifier() -> TokenVerifier:
     return TokenVerifier(get_settings())
-
-
-def get_auth_user(
-    request: Request, verifier: TokenVerifier = Depends(get_token_verifier)
-) -> AuthUser:
-    scheme, _, token = request.headers.get("Authorization", "").partition(" ")
-    if scheme.lower() != "bearer" or not token:
-        raise UnauthenticatedError("Falta el token de acceso.")
-    return verifier.verify(token.strip())

@@ -11,7 +11,7 @@ from app.core.config import get_settings
 from app.core.errors import ConflictError, NotFoundError, TokenExpiredError
 from app.core.tokens import hash_token, new_token
 from app.integrations.email.base import EmailMessage
-from app.models import Contact, Invitation, Profile, SupportRequest
+from app.models import Contact, FamilyAccess, Invitation, Profile, SupportRequest
 from app.modules.contacts import repository
 from app.modules.contacts.schemas import ConsentView, ContactIn, ContactUpdate
 from app.modules.followup import audit
@@ -94,6 +94,11 @@ def revoke_contact(db: Session, owner_id: uuid.UUID, contact_id: uuid.UUID) -> C
             SupportRequest.contact_id == contact.id, SupportRequest.status.in_(("draft", "queued"))
         )
         .values(status="cancelled")
+    )
+    db.execute(
+        update(FamilyAccess)
+        .where(FamilyAccess.contact_id == contact.id, FamilyAccess.status == "active")
+        .values(status="revoked", revoked_at=utcnow(), token_hash=None)
     )
     db.flush()
     audit.record(

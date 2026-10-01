@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dispositivo · Silver Minds</title>
+    <meta name="robots" content="noindex" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap"
+    />
+    <link rel="stylesheet" href="/shared/tokens.css" />
+    <link rel="stylesheet" href="/device/device.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <p class="stage-note">Simulación de la pantalla física · Silver Minds</p>
+
+      <section class="device" id="device" data-state="off" data-mode="normal" aria-label="Dispositivo">
+        <div class="screen">
+          <header class="status-bar">
+            <time id="clock" class="clock"></time>
+            <p id="camera-indicator" class="camera-indicator" hidden>
+              <span class="live-dot" aria-hidden="true"></span>
+              <span id="camera-text">Cámara compartida</span>
+            </p>
+          </header>
+
+          <div class="character" aria-hidden="true">
+            <svg viewBox="0 0 240 240" role="img">
+              <defs>
+                <radialGradient id="glow" cx="38%" cy="32%" r="75%">
+                  <stop offset="0%" stop-color="#ffd98a" />
+                  <stop offset="60%" stop-color="#ffb24d" />
+                  <stop offset="100%" stop-color="#f0744a" />
+                </radialGradient>
+              </defs>
+              <circle class="halo halo-outer" cx="120" cy="120" r="112" />
+              <circle class="halo halo-inner" cx="120" cy="120" r="96" />
+              <circle class="face" cx="120" cy="120" r="78" fill="url(#glow)" />
+              <g class="eyes-open">
+                <ellipse cx="94" cy="108" rx="9" ry="13" />
+                <ellipse cx="146" cy="108" rx="9" ry="13" />
+              </g>
+              <g class="eyes-closed">
+                <path d="M83 110 q11 9 22 0" />
+                <path d="M135 110 q11 9 22 0" />
+              </g>
+              <path class="mouth mouth-smile" d="M96 142 q24 20 48 0" />
+              <ellipse class="mouth mouth-open" cx="120" cy="148" rx="14" ry="9" />
+              <path class="mouth mouth-soft" d="M102 148 q18 8 36 0" />
+            </svg>
+          </div>
+
+          <p id="caption" class="caption" aria-live="polite"></p>
+          <p id="hint" class="hint"></p>
+
+          <section id="card" class="card" hidden aria-live="polite">
+            <p id="card-kicker" class="card-kicker"></p>
+            <h2 id="card-title" class="card-title"></h2>
+            <p id="card-body" class="card-body"></p>
+            <div class="card-actions">
+              <button id="card-yes" class="choice choice-yes" type="button"></button>
+              <button id="card-no" class="choice choice-no" type="button"></button>
+            </div>
+          </section>
+
+          <section id="support" class="support" hidden>
+            <ul id="support-resources" class="resources"></ul>
+            <div id="support-contacts" class="support-contacts"></div>
+            <form id="support-draft" class="support-draft" hidden>
+              <label for="support-message">Revisa el mensaje antes de enviarlo</label>
+              <textarea id="support-message" rows="3" maxlength="1000"></textarea>
+              <div class="card-actions">
+                <button class="choice choice-yes" type="submit">Enviar</button>
+                <button id="support-cancel" class="choice choice-no" type="button">Cancelar</button>
+              </div>
+            </form>
+            <button id="resume" class="choice choice-quiet" type="button" hidden>
+              Retomar la conversación habitual
+            </button>
+          </section>
+
+          <button id="power" class="power" type="button">Toca para encender</button>
+          <video id="preview" class="preview" muted playsinline hidden></video>
+        </div>
+
+        <aside class="controls" aria-label="Controles del dispositivo">
+          <button id="call" class="call-button" type="button" disabled>
+            <span class="call-label">Llamar</span>
+          </button>
+          <label class="camera-switch">
+            <input id="camera-toggle" type="checkbox" disabled />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            <span class="switch-label">Cámara</span>
+          </label>
+          <span id="led" class="led" aria-hidden="true"></span>
+        </aside>
+      </section>
+
+      <section class="simulator" aria-label="Simulador">
+        <form id="say-form" class="say-form">
+          <label for="say-input">Simular lo que dice la persona</label>
+          <div class="say-row">
+            <input id="say-input" type="text" autocomplete="off" placeholder="Silvia, quiero hacer algo con plantas" />
+            <button type="submit">Decir</button>
+          </div>
+        </form>
+        <p id="mic-status" class="mic-status"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/device/device.js"></script>
+  </body>
+</html>
