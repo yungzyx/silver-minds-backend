@@ -14,6 +14,7 @@ os.environ["EMAIL_PROVIDER"] = "fake"
 os.environ["STORAGE_PROVIDER"] = "local"
 
 from collections.abc import Iterator  # noqa: E402
+from types import SimpleNamespace  # noqa: E402
 
 import pytest  # noqa: E402
 from alembic import command  # noqa: E402
@@ -23,6 +24,9 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.core.db import get_engine, get_session_factory  # noqa: E402
+from app.integrations import registry  # noqa: E402
+from app.integrations.ai.fake import FakeAIProvider  # noqa: E402
+from app.integrations.email.fake import FakeEmailSender  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.base import Base  # noqa: E402
 
@@ -62,3 +66,12 @@ def db() -> Iterator[Session]:
 def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture(autouse=True)
+def providers() -> Iterator[SimpleNamespace]:
+    """Proveedores simulados nuevos en cada prueba, accesibles para inspeccionarlos."""
+    adapters = SimpleNamespace(ai=FakeAIProvider(), email=FakeEmailSender())
+    registry.override(ai=adapters.ai, email=adapters.email)
+    yield adapters
+    registry.clear_overrides()
