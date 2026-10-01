@@ -14,6 +14,12 @@ export function readToken(storageKey) {
   return fromLink || window.localStorage.getItem(storageKey);
 }
 
+// Si se pega un enlace nuevo con la página ya abierta, solo cambia el fragmento y el
+// navegador no recarga: se recarga aquí para tomar el token nuevo.
+window.addEventListener("hashchange", () => {
+  if (new URLSearchParams(window.location.hash.slice(1)).has("token")) window.location.reload();
+});
+
 export class ApiError extends Error {
   constructor(status, code, message) {
     super(message);
