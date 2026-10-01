@@ -474,8 +474,8 @@ def test_maintenance_purges_old_conversations_and_safety_events(
     with session_scope() as session:
         purged = maintenance.purge_expired(session, utcnow() + timedelta(days=31))
 
-    assert kept == {"conversations_deleted": 0, "safety_events_deleted": 0}
-    assert purged == {"conversations_deleted": 1, "safety_events_deleted": 1}
+    assert kept == {"conversations_deleted": 0, "safety_events_deleted": 0, "audios_deleted": 0}
+    assert purged == {"conversations_deleted": 1, "safety_events_deleted": 1, "audios_deleted": 0}
     assert db.execute(select(func.count()).select_from(Conversation)).scalar_one() == 0
     assert db.execute(select(func.count()).select_from(SafetyEvent)).scalar_one() == 0
     assert uuid.UUID(conversation_id)
