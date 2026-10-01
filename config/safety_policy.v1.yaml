@@ -10,7 +10,8 @@ professional_review: pending
 rules:
   # Acción en curso o peligro inmediato declarado.
   urgent:
-    - '\b(ya )?me (tome|trague) (todas )?(las|unas|muchas) pastillas\b'
+    # Tomar los remedios de siempre no es una señal: se exige una cantidad fuera de lo común.
+    - '\bme (tome|trague) (todas las|muchas|demasiadas|un monton de|el frasco de|un frasco de) pastillas\b'
     - '\btengo (las pastillas|el arma|la pistola|el cuchillo|la cuerda|el veneno) (en la mano|lista|listo|conmigo|aqui)\b'
     - '\b(me voy a|voy a) (matarme|matar|suicidarme|suicidar|quitarme la vida)\b.{0,40}\b(ahora|hoy|esta noche|ya|mismo)\b'
     - '\b(ahora|hoy|esta noche) (mismo )?(me voy a|voy a) (matarme|suicidarme|quitarme la vida)\b'
